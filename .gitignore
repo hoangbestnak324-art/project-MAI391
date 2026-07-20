@@ -1,0 +1,11 @@
+# Bỏ qua môi trường ảo Python
+venv/
+env/
+__pycache__/
+
+# Bỏ qua file dữ liệu vector nặng (mỗi máy sẽ tự sinh ra)
+*.pkl
+
+# Bỏ qua các file cấu hình tạm của VS Code hay OS
+.vscode/
+.DS_Store
