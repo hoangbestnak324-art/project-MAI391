@@ -302,3 +302,65 @@ async def register_student(
 
     except Exception as e:
         return JSONResponse({"success": False, "message": f"Lỗi hệ thống: {str(e)}"}, status_code=500)
+
+@app.get("/api/students")
+async def get_students_api():
+    """
+    Lấy danh sách tất cả sinh viên đã đăng ký trong hệ thống.
+    """
+    students_dict = load_all_students()
+    result = []
+    for code, info in students_dict.items():
+        result.append({
+            "student_code": code,
+            "name": info["name"]
+        })
+    return JSONResponse({"success": True, "students": result})
+
+@app.put("/api/students/{old_code}")
+async def update_student_api(old_code: str, request: Request):
+    """
+    Cập nhật thông tin sinh viên (MSSV / Họ Tên).
+    """
+    try:
+        body = await request.json()
+        new_code = body.get("student_code", "").strip()
+        new_name = body.get("name", "").strip()
+
+        if not new_code or not new_name:
+            return JSONResponse({"success": False, "message": "Thông tin không được để trống!"}, status_code=400)
+
+        from database import update_student
+        update_student(old_code, new_code, new_name)
+
+        if old_code != new_code and os.path.exists(os.path.join("Dataset", old_code)):
+            import shutil
+            old_dir = os.path.join("Dataset", old_code)
+            new_dir = os.path.join("Dataset", new_code)
+            if os.path.exists(new_dir):
+                shutil.rmtree(new_dir)
+            os.rename(old_dir, new_dir)
+
+        refresh_student_cache()
+        return JSONResponse({"success": True, "message": f"Đã cập nhật sinh viên {new_name} ({new_code}) thành công!"})
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
+
+@app.delete("/api/students/{student_code}")
+async def delete_student_api(student_code: str):
+    """
+    Xóa sinh viên khỏi hệ thống.
+    """
+    try:
+        import shutil
+        from database import delete_student
+        delete_student(student_code)
+
+        dataset_dir = os.path.join("Dataset", student_code)
+        if os.path.exists(dataset_dir):
+            shutil.rmtree(dataset_dir)
+
+        refresh_student_cache()
+        return JSONResponse({"success": True, "message": f"Đã xóa thành công sinh viên {student_code}!"})
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)

@@ -828,6 +828,74 @@
             background: var(--primary-focus);
         }
 
+        .btn-manage {
+            background: var(--panel-card);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            padding: 0.45rem 0.9rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-manage:hover {
+            background: var(--panel-bg);
+            border-color: var(--primary-on-dark);
+            color: var(--primary-on-dark);
+        }
+
+        .student-manage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .student-manage-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--panel-card);
+            border: 1px solid var(--panel-border);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            gap: 0.75rem;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .btn-action-edit {
+            background: rgba(234, 179, 8, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            padding: 0.35rem 0.65rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-action-delete {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 0.35rem 0.65rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 1024px) {
             main {
@@ -879,6 +947,15 @@
         </div>
 
         <div class="header-meta">
+            <button class="btn-manage" onclick="openManageModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Quản Lý Sinh Viên</span>
+            </button>
             <button class="btn-register" onclick="openRegisterModal()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                     stroke-linecap="round" stroke-linejoin="round">
@@ -936,7 +1013,7 @@
             </div>
 
             <div class="search-box">
-                <input type="text" class="search-input" id="search-input" placeholder="🔍 Tìm tên hoặc mã sinh viên..."
+                <input type="text" class="search-input" id="search-input" placeholder="🔍 Tìm tên / MSSV..."
                     oninput="filterAttendance()">
             </div>
 
@@ -1031,6 +1108,33 @@
                 <button class="btn-cancel" onclick="closeRegisterModal()">Hủy</button>
                 <button class="btn-submit" id="btn-submit-reg" onclick="submitRegistration()">Lưu & Trích Xuất
                     Vector</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANAGE STUDENTS MODAL OVERLAY -->
+    <div class="modal-overlay" id="manage-modal">
+        <div class="modal-card" style="max-width: 620px;">
+            <div class="modal-header">
+                <h3>👥 Quản Lý Sinh Viên Đã Đăng Ký</h3>
+                <button class="close-btn" onclick="closeManageModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="manage-alert" class="alert-box" style="display:none;"></div>
+
+                <div style="display: flex; gap: 0.6rem; align-items: center;">
+                    <div style="flex:1;" class="search-box">
+                        <input type="text" class="search-input" id="manage-search-input" placeholder="🔍 Tìm tên hoặc MSSV..." oninput="renderStudentManageList()">
+                    </div>
+                    <div class="count-chip" id="manage-total-count" style="padding: 0.55rem 0.85rem; font-size: 0.8rem;">0 Sinh viên</div>
+                </div>
+
+                <div class="student-manage-list" id="manage-student-list">
+                    <!-- Dynamic Student Cards Rendered Here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeManageModal()">Đóng</button>
             </div>
         </div>
     </div>
@@ -1416,6 +1520,140 @@
                     item.style.display = 'none';
                 }
             });
+        }
+
+        // STUDENT MANAGEMENT DASHBOARD FUNCTIONS
+        let allRegisteredStudents = [];
+
+        async function openManageModal() {
+            document.getElementById('manage-modal').classList.add('active');
+            document.getElementById('manage-alert').style.display = 'none';
+            await fetchAndRenderStudents();
+        }
+
+        function closeManageModal() {
+            document.getElementById('manage-modal').classList.remove('active');
+        }
+
+        async function fetchAndRenderStudents() {
+            try {
+                const res = await fetch('/api/students');
+                const data = await res.json();
+                if (data.success) {
+                    allRegisteredStudents = data.students || [];
+                    renderStudentManageList();
+                }
+            } catch (e) {
+                console.error("Lỗi lấy danh sách sinh viên:", e);
+            }
+        }
+
+        function renderStudentManageList() {
+            const listContainer = document.getElementById('manage-student-list');
+            const query = (document.getElementById('manage-search-input').value || '').toLowerCase();
+            const countChip = document.getElementById('manage-total-count');
+
+            const filtered = allRegisteredStudents.filter(s =>
+                (s.name || '').toLowerCase().includes(query) || (s.student_code || '').toLowerCase().includes(query)
+            );
+
+            countChip.textContent = `${filtered.length} Sinh viên`;
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-muted); font-size:0.85rem;">Không tìm thấy sinh viên nào trong CSDL.</div>`;
+                return;
+            }
+
+            listContainer.innerHTML = filtered.map(s => `
+                <div class="student-manage-card" id="student-card-${s.student_code}">
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex:1;">
+                        <div class="avatar">${s.name ? s.name.charAt(0).toUpperCase() : '?'}</div>
+                        <div class="student-info-box" id="info-box-${s.student_code}">
+                            <div class="student-name" style="font-weight:600;">${s.name}</div>
+                            <span class="student-code" style="font-size:0.8rem; opacity:0.8;">MSSV: ${s.student_code}</span>
+                        </div>
+                    </div>
+                    <div class="action-btns" id="action-box-${s.student_code}">
+                        <button class="btn-action-edit" onclick="enableEditStudent('${s.student_code}', '${s.name.replace(/'/g, "\\'")}')">✏️ Sửa</button>
+                        <button class="btn-action-delete" onclick="deleteStudentAction('${s.student_code}', '${s.name.replace(/'/g, "\\'")}')">🗑️ Xóa</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function enableEditStudent(code, name) {
+            const infoBox = document.getElementById(`info-box-${code}`);
+            const actionBox = document.getElementById(`action-box-${code}`);
+
+            infoBox.innerHTML = `
+                <input type="text" id="edit-name-${code}" value="${name}" style="padding:0.3rem 0.5rem; font-size:0.85rem; border-radius:4px; border:1px solid var(--panel-border); background:var(--panel-bg); color:var(--text-primary); margin-bottom:0.2rem; width:100%;">
+                <input type="text" id="edit-code-${code}" value="${code}" style="padding:0.3rem 0.5rem; font-size:0.85rem; border-radius:4px; border:1px solid var(--panel-border); background:var(--panel-bg); color:var(--text-primary); width:100%;">
+            `;
+
+            actionBox.innerHTML = `
+                <button class="btn-action-edit" style="background:var(--primary); color:#fff; border:none;" onclick="saveEditStudent('${code}')">💾 Lưu</button>
+                <button class="btn-cancel" style="padding:0.35rem 0.65rem; font-size:0.78rem;" onclick="renderStudentManageList()">Hủy</button>
+            `;
+        }
+
+        async function saveEditStudent(oldCode) {
+            const newName = document.getElementById(`edit-name-${oldCode}`).value.trim();
+            const newCode = document.getElementById(`edit-code-${oldCode}`).value.trim();
+            const alertBox = document.getElementById('manage-alert');
+
+            if (!newName || !newCode) {
+                alertBox.className = 'alert-box error';
+                alertBox.textContent = '❌ Thông tin không được để trống!';
+                alertBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/students/${oldCode}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_code: newCode, name: newName })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alertBox.className = 'alert-box success';
+                    alertBox.textContent = result.message;
+                    alertBox.style.display = 'block';
+                    await fetchAndRenderStudents();
+                } else {
+                    alertBox.className = 'alert-box error';
+                    alertBox.textContent = '❌ ' + result.message;
+                    alertBox.style.display = 'block';
+                }
+            } catch (err) {
+                alertBox.className = 'alert-box error';
+                alertBox.textContent = '❌ Lỗi hệ thống: ' + err.message;
+                alertBox.style.display = 'block';
+            }
+        }
+
+        async function deleteStudentAction(code, name) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa sinh viên ${name} (${code}) khỏi CSDL?`)) return;
+            const alertBox = document.getElementById('manage-alert');
+
+            try {
+                const res = await fetch(`/api/students/${code}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) {
+                    alertBox.className = 'alert-box success';
+                    alertBox.textContent = result.message;
+                    alertBox.style.display = 'block';
+                    await fetchAndRenderStudents();
+                } else {
+                    alertBox.className = 'alert-box error';
+                    alertBox.textContent = '❌ ' + result.message;
+                    alertBox.style.display = 'block';
+                }
+            } catch (err) {
+                alertBox.className = 'alert-box error';
+                alertBox.textContent = '❌ Lỗi hệ thống: ' + err.message;
+                alertBox.style.display = 'block';
+            }
         }
 
         connectWebSocket();

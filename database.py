@@ -46,6 +46,33 @@ def save_student(student_code: str, name: str, embedding: np.ndarray):
     conn.commit()
     conn.close()
 
+def update_student(old_code: str, new_code: str, new_name: str):
+    """
+    Cập nhật thông tin sinh viên (MSSV và Họ Tên). Đồng bộ lịch sử điểm danh.
+    """
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    if old_code != new_code:
+        cursor.execute("UPDATE students SET student_code = ?, name = ? WHERE student_code = ?", (new_code, new_name, old_code))
+        cursor.execute("UPDATE attendance SET student_code = ? WHERE student_code = ?", (new_code, old_code))
+    else:
+        cursor.execute("UPDATE students SET name = ? WHERE student_code = ?", (new_name, old_code))
+        
+    conn.commit()
+    conn.close()
+
+def delete_student(student_code: str):
+    """
+    Xóa sinh viên khỏi cơ sở dữ liệu và lịch sử điểm danh.
+    """
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM attendance WHERE student_code = ?", (student_code,))
+    cursor.execute("DELETE FROM students WHERE student_code = ?", (student_code,))
+    conn.commit()
+    conn.close()
+
 def load_all_students():
     """
     Trả về một dictionary: {student_code: {"name": name, "embedding": np.ndarray}}
