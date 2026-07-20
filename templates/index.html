@@ -1,29 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>VisionSync | AI Face Attendance System</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
+        /* Apple & Modern Dark Gallery Design Tokens (from DESIGN.md) */
         :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
+            --primary: #0066cc;
+            --primary-focus: #0071e3;
+            --primary-on-dark: #2997ff;
+            --ink: #1d1d1f;
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --panel-card: rgba(255, 255, 255, 0.03);
+            --panel-card-hover: rgba(255, 255, 255, 0.07);
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
-            --accent-primary: #3b82f6;
-            --accent-secondary: #06b6d4;
+            --text-muted: #64748b;
+            --accent-blue: #0066cc;
+            --accent-cyan: #06b6d4;
             --success: #10b981;
             --danger: #ef4444;
-            --border-color: rgba(255, 255, 255, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-pill: 9999px;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: var(--font-family);
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
@@ -33,30 +50,73 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 102, 204, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
         }
 
+        /* HEADER */
         header {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1.5rem 2rem;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 100;
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .brand {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(0, 102, 204, 0.35);
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .live-clock {
+            font-size: 0.875rem;
+            font-family: monospace;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.35rem 0.85rem;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--panel-border);
         }
 
         .status-badge {
@@ -65,11 +125,12 @@
             gap: 0.5rem;
             background: rgba(16, 185, 129, 0.1);
             color: var(--success);
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.875rem;
+            padding: 0.45rem 1rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.85rem;
             font-weight: 500;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            transition: all 0.3s ease;
         }
 
         .status-dot {
@@ -82,343 +143,466 @@
         }
 
         @keyframes pulse {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            }
-
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-            }
-
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-            }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
+        /* MAIN LAYOUT */
         main {
             display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 2rem;
-            padding: 2rem;
+            grid-template-columns: 1fr 420px;
+            gap: 1.75rem;
+            padding: 1.75rem 2rem;
             flex: 1;
-            max-width: 1600px;
+            max-width: 1700px;
             margin: 0 auto;
             width: 100%;
         }
 
+        /* VIDEO PANEL */
         .video-container {
             background: var(--panel-bg);
-            border-radius: 1.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg);
             overflow: hidden;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             display: flex;
             flex-direction: column;
             position: relative;
         }
 
         .video-header {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+            padding: 1.1rem 1.5rem;
+            border-bottom: 1px solid var(--panel-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .video-header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
         }
 
         .video-header h2 {
             font-size: 1rem;
             font-weight: 600;
-            color: var(--text-secondary);
+            letter-spacing: -0.01em;
+        }
+
+        .pipeline-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            background: rgba(0, 102, 204, 0.15);
+            color: var(--primary-on-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(41, 151, 255, 0.25);
+            font-weight: 500;
+        }
+
+        .video-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #040711;
+            min-height: 480px;
         }
 
         .video-feed {
             width: 100%;
             height: auto;
+            max-height: 72vh;
             aspect-ratio: 16/9;
             object-fit: cover;
             display: block;
-            background-color: #000;
         }
 
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.8), transparent);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.9);
+            top: 0;
+            left: 0;
+            animation: scan 3.5s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .video-footer {
+            padding: 0.85rem 1.5rem;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--panel-border);
+            color: var(--text-secondary);
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--text-primary);
+        }
+
+        /* ATTENDANCE LIST PANEL */
         .attendance-panel {
             background: var(--panel-bg);
-            border-radius: 1.5rem;
-            border: 1px solid var(--border-color);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--panel-border);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            height: calc(100vh - 120px);
+            max-height: 820px;
         }
 
         .panel-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.2);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(0, 0, 0, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .panel-header h2 {
-            font-size: 1.25rem;
+        .panel-title {
+            font-size: 1.1rem;
             font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
-        .panel-header p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
+        .panel-subtitle {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+        }
+
+        .count-chip {
+            background: rgba(0, 102, 204, 0.2);
+            color: var(--primary-on-dark);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(0, 102, 204, 0.3);
+        }
+
+        .search-box {
+            padding: 0.85rem 1.25rem;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-sm);
+            padding: 0.55rem 0.85rem;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-on-dark);
+            box-shadow: 0 0 0 2px rgba(41, 151, 255, 0.2);
         }
 
         .attendance-list {
             list-style: none;
             overflow-y: auto;
             flex: 1;
-            padding: 1rem;
+            padding: 1rem 1.25rem;
         }
 
-        /* Custom Scrollbar */
         .attendance-list::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
-
         .attendance-list::-webkit-scrollbar-track {
             background: transparent;
         }
-
         .attendance-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 10px;
         }
 
         .attendance-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 1rem;
-            padding: 1rem;
+            background: var(--panel-card);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-md);
+            padding: 0.9rem 1.1rem;
             margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
             gap: 1rem;
-            transform: translateY(0);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: slideIn 0.4s ease-out forwards;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideIn 0.35s ease-out forwards;
         }
 
         .attendance-item:hover {
             transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: var(--panel-card-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         }
 
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .avatar {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 1.25rem;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-            color: white;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+            flex-shrink: 0;
         }
 
         .student-info {
             flex: 1;
+            min-width: 0;
         }
 
         .student-name {
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .student-code {
             color: var(--text-secondary);
             font-size: 0.75rem;
             font-family: monospace;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.2rem 0.5rem;
-            border-radius: 0.25rem;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: inline-block;
         }
 
         .time-badge {
             font-size: 0.75rem;
             color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.05);
-            padding: 0.4rem 0.75rem;
-            border-radius: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            white-space: nowrap;
         }
 
         .empty-state {
             text-align: center;
-            padding: 3rem 1rem;
-            color: var(--text-secondary);
+            padding: 4rem 1.5rem;
+            color: var(--text-muted);
         }
 
         .empty-state svg {
-            width: 48px;
-            height: 48px;
-            opacity: 0.5;
+            width: 52px;
+            height: 52px;
+            opacity: 0.35;
             margin-bottom: 1rem;
+            color: var(--text-secondary);
         }
 
-        /* Scan Line Effect overlaying video */
-        .scan-line {
-            position: absolute;
-            width: 100%;
-            height: 4px;
-            background: rgba(59, 130, 246, 0.5);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.5);
-            top: 0;
-            left: 0;
-            animation: scan 4s linear infinite;
-            pointer-events: none;
-            z-index: 5;
-            display: none;
-            /* Hide by default, can be toggled via JS */
+        .empty-state p {
+            font-size: 0.9rem;
         }
 
-        @keyframes scan {
-            0% {
-                top: 0;
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                top: 100%;
-                opacity: 0;
-            }
-        }
-
+        /* RESPONSIVE */
         @media (max-width: 1024px) {
             main {
                 grid-template-columns: 1fr;
             }
-
-            .video-feed {
-                max-height: 60vh;
-            }
-
             .attendance-panel {
                 height: 500px;
             }
         }
     </style>
 </head>
-
 <body>
 
+    <!-- HEADER -->
     <header>
-        <div class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
-                <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
-                <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
-                <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
-                <rect x="7" y="7" width="10" height="10" rx="2"></rect>
-                <path d="M12 11v2"></path>
-            </svg>
-            DASHBOARD
+        <div class="brand">
+            <div class="brand-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                    <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                    <rect x="7" y="7" width="10" height="10" rx="2"></rect>
+                    <circle cx="12" cy="12" r="2"></circle>
+                </svg>
+            </div>
+            <div>
+                <h1 class="brand-title">VisionSync</h1>
+                <div class="brand-subtitle">AI Face Attendance Dashboard</div>
+            </div>
         </div>
-        <div class="status-badge" id="conn-status">
-            <div class="status-dot"></div>
-            System Active
+
+        <div class="header-meta">
+            <div class="live-clock" id="live-clock">--:--:--</div>
+            <div class="status-badge" id="conn-status">
+                <div class="status-dot"></div>
+                <span>Đang kết nối...</span>
+            </div>
         </div>
     </header>
 
+    <!-- MAIN CONTENT -->
     <main>
-        <!-- Video Feed Section -->
+        <!-- VIDEO STREAM -->
         <section class="video-container">
             <div class="video-header">
-                <h2>Live Camera (YOLOv8 + ArcFace)</h2>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Pipeline: Active</span>
+                <div class="video-header-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-on-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 7l-7 5 7 5V7z"></path>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                    <h2>Live Camera Stream</h2>
+                </div>
+                <div class="pipeline-pill">
+                    <span style="width: 6px; height: 6px; background: var(--accent-cyan); border-radius: 50%;"></span>
+                    YOLOv8 + InsightFace 512D
                 </div>
             </div>
-            <div
-                style="position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: #000;">
-                <img src="/video_feed" class="video-feed" alt="Video Stream">
-                <div class="scan-line"></div>
+
+            <div class="video-wrapper">
+                <img src="/video_feed" class="video-feed" alt="Camera Live Feed">
+                <div class="scan-line" id="scan-line"></div>
+            </div>
+
+            <div class="video-footer">
+                <span>Trạng thái: Real-time Face Recognition Active</span>
+                <button class="toggle-btn" onclick="toggleScanLine()">Bật/Tắt Laser Scan</button>
             </div>
         </section>
 
-        <!-- Attendance List Section -->
+        <!-- ATTENDANCE PANEL -->
         <section class="attendance-panel">
             <div class="panel-header">
-                <h2>Today's Attendance</h2>
-                <p>Real-time sync enabled</p>
+                <div>
+                    <h2 class="panel-title">Danh Sách Điểm Danh</h2>
+                    <div class="panel-subtitle">Tự động đồng bộ thời gian thực</div>
+                </div>
+                <div class="count-chip" id="total-count">
+                    {{ attendance|length if attendance else 0 }} Sinh viên
+                </div>
             </div>
+
+            <div class="search-box">
+                <input type="text" class="search-input" id="search-input" placeholder="🔍 Tìm tên hoặc mã sinh viên..." oninput="filterAttendance()">
+            </div>
+
             <ul class="attendance-list" id="attendance-list">
                 {% if attendance %}
-                {% for p in attendance %}
-                <li class="attendance-item">
-                    <div class="avatar">{{ p.name[0].upper() }}</div>
-                    <div class="student-info">
-                        <div class="student-name">{{ p.name }}</div>
-                        <span class="student-code">{{ p.student_code }}</span>
-                    </div>
-                    <div class="time-badge">{{ p.time }}</div>
-                </li>
-                {% endfor %}
+                    {% for p in attendance %}
+                    <li class="attendance-item" data-code="{{ p.student_code }}" data-name="{{ p.name }}">
+                        <div class="avatar">{{ p.name[0].upper() if p.name else '?' }}</div>
+                        <div class="student-info">
+                            <div class="student-name">{{ p.name }}</div>
+                            <span class="student-code">{{ p.student_code }}</span>
+                        </div>
+                        <div class="time-badge">{{ p.time }}</div>
+                    </li>
+                    {% endfor %}
                 {% else %}
-                <div class="empty-state" id="empty-state">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <p>No one has checked in yet.</p>
-                </div>
+                    <div class="empty-state" id="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <p>Chưa có sinh viên nào điểm danh hôm nay.</p>
+                    </div>
                 {% endif %}
             </ul>
         </section>
     </main>
 
+    <!-- SCRIPTS -->
     <script>
-        // WebSocket Connection for Real-time Updates
+        // Clock Script
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('vi-VN', { hour12: false });
+            document.getElementById('live-clock').textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Toggle Scan Line
+        function toggleScanLine() {
+            const scanLine = document.getElementById('scan-line');
+            scanLine.style.display = (scanLine.style.display === 'none') ? 'block' : 'none';
+        }
+
+        // WebSocket Real-Time Sync
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/ws`;
+        
+        let attendanceCount = {{ attendance|length if attendance else 0 }};
 
         const connectWebSocket = () => {
             const ws = new WebSocket(wsUrl);
             const statusBadge = document.getElementById('conn-status');
             const statusDot = statusBadge.querySelector('.status-dot');
+            const statusText = statusBadge.querySelector('span');
 
             ws.onopen = () => {
                 statusBadge.style.color = 'var(--success)';
                 statusBadge.style.background = 'rgba(16, 185, 129, 0.1)';
-                statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.25)';
                 statusDot.style.backgroundColor = 'var(--success)';
                 statusDot.style.boxShadow = '0 0 10px var(--success)';
-                statusBadge.childNodes[2].nodeValue = ' Connected';
+                statusText.textContent = 'Hệ Thống Hoạt Động';
             };
 
             ws.onmessage = (event) => {
@@ -432,10 +616,9 @@
                 statusBadge.style.color = 'var(--text-secondary)';
                 statusBadge.style.background = 'rgba(255, 255, 255, 0.05)';
                 statusBadge.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                statusDot.style.backgroundColor = 'var(--text-secondary)';
+                statusDot.style.backgroundColor = 'var(--text-muted)';
                 statusDot.style.boxShadow = 'none';
-                statusBadge.childNodes[2].nodeValue = ' Reconnecting...';
-                // Try to reconnect in 3 seconds
+                statusText.textContent = 'Đang kết nối lại...';
                 setTimeout(connectWebSocket, 3000);
             };
         };
@@ -443,18 +626,26 @@
         function addAttendanceItem(data) {
             const list = document.getElementById('attendance-list');
             const emptyState = document.getElementById('empty-state');
-
+            
             if (emptyState) {
                 emptyState.remove();
             }
 
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            // Check if already in list
+            const existing = document.querySelector(`[data-code="${data.student_code}"]`);
+            if (existing) return;
 
+            attendanceCount++;
+            document.getElementById('total-count').textContent = `${attendanceCount} Sinh viên`;
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('vi-VN', { hour12: false });
             const initial = data.name ? data.name.charAt(0).toUpperCase() : '?';
 
             const li = document.createElement('li');
             li.className = 'attendance-item';
+            li.setAttribute('data-code', data.student_code);
+            li.setAttribute('data-name', data.name);
             li.innerHTML = `
                 <div class="avatar">${initial}</div>
                 <div class="student-info">
@@ -463,14 +654,27 @@
                 </div>
                 <div class="time-badge">${timeString}</div>
             `;
-
-            // Add to the top of the list
+            
             list.insertBefore(li, list.firstChild);
         }
 
-        // Initialize WebSocket
+        // Filter Attendance
+        function filterAttendance() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.attendance-item');
+            
+            items.forEach(item => {
+                const name = (item.getAttribute('data-name') || '').toLowerCase();
+                const code = (item.getAttribute('data-code') || '').toLowerCase();
+                if (name.includes(query) || code.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
         connectWebSocket();
     </script>
 </body>
-
 </html>
