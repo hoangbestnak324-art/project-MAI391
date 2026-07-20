@@ -34,7 +34,6 @@ def save_student(student_code: str, name: str, embedding: np.ndarray):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Chuyển numpy array thành list rồi sang string JSON để lưu vào SQLite
     emb_list = embedding.tolist()
     emb_json = json.dumps(emb_list)
     
@@ -47,9 +46,6 @@ def save_student(student_code: str, name: str, embedding: np.ndarray):
     conn.close()
 
 def update_student(old_code: str, new_code: str, new_name: str):
-    """
-    Cập nhật thông tin sinh viên (MSSV và Họ Tên). Đồng bộ lịch sử điểm danh.
-    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
@@ -63,9 +59,6 @@ def update_student(old_code: str, new_code: str, new_name: str):
     conn.close()
 
 def delete_student(student_code: str):
-    """
-    Xóa sinh viên khỏi cơ sở dữ liệu và lịch sử điểm danh.
-    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM attendance WHERE student_code = ?", (student_code,))
@@ -74,9 +67,6 @@ def delete_student(student_code: str):
     conn.close()
 
 def load_all_students():
-    """
-    Trả về một dictionary: {student_code: {"name": name, "embedding": np.ndarray}}
-    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("SELECT student_code, name, embedding FROM students")
@@ -94,13 +84,9 @@ def load_all_students():
     return students_data
 
 def log_attendance(student_code: str):
-    """
-    Ghi nhận điểm danh cho sinh viên. Chỉ ghi nếu hôm nay chưa điểm danh.
-    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Kiểm tra xem hôm nay sinh viên này đã điểm danh chưa
     cursor.execute("""
         SELECT COUNT(*) FROM attendance 
         WHERE student_code = ? AND date(timestamp, 'localtime') = date('now', 'localtime')
@@ -117,10 +103,22 @@ def log_attendance(student_code: str):
     conn.close()
     return is_new
 
+def reset_today_attendance():
+    """
+    Xóa toàn bộ dữ liệu điểm danh trong ngày hôm nay.
+    """
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("""
+        DELETE FROM attendance 
+        WHERE date(timestamp, 'localtime') = date('now', 'localtime')
+    """)
+    deleted_count = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted_count
+
 def get_today_attendance():
-    """
-    Lấy danh sách điểm danh trong ngày hôm nay.
-    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("""
@@ -143,5 +141,4 @@ def get_today_attendance():
         })
     return results
 
-# Tự động khởi tạo DB khi module được import lần đầu
 init_db()

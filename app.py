@@ -223,7 +223,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, Exception):
         manager.disconnect(websocket)
 
 @app.post("/api/register_student")
@@ -362,5 +362,28 @@ async def delete_student_api(student_code: str):
 
         refresh_student_cache()
         return JSONResponse({"success": True, "message": f"Đã xóa thành công sinh viên {student_code}!"})
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
+
+@app.post("/api/attendance/reset")
+async def reset_attendance_api():
+    """
+    API Reset/Xóa toàn bộ lịch sử điểm danh hôm nay.
+    """
+    try:
+        from database import reset_today_attendance
+        deleted_count = reset_today_attendance()
+
+        global last_notification_time
+        last_notification_time.clear()
+
+        asyncio.create_task(manager.broadcast(json.dumps({
+            "type": "reset_attendance"
+        })))
+
+        return JSONResponse({
+            "success": True,
+            "message": f"🧹 Đã reset danh sách điểm danh hôm nay ({deleted_count} sinh viên)!"
+        })
     except Exception as e:
         return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
