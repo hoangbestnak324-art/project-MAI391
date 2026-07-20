@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            padding: 2rem;
+            flex: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .video-container {
+            background: var(--panel-bg);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .video-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .video-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .video-feed {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+            background-color: #000;
+        }
+
+        .attendance-panel {
+            background: var(--panel-bg);
+            border-radius: 1.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .panel-header p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .attendance-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+            padding: 1rem;
+        }
+
+        /* Custom Scrollbar */
+        .attendance-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .attendance-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .attendance-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .attendance-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transform: translateY(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideIn 0.4s ease-out forwards;
+        }
+
+        .attendance-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            color: white;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .student-code {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .time-badge {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.4rem 0.75rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+
+        /* Scan Line Effect overlaying video */
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.5);
+            top: 0;
+            left: 0;
+            animation: scan 4s linear infinite;
+            pointer-events: none;
+            z-index: 5;
+            display: none;
+            /* Hide by default, can be toggled via JS */
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .video-feed {
+                max-height: 60vh;
+            }
+
+            .attendance-panel {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                <rect x="7" y="7" width="10" height="10" rx="2"></rect>
+                <path d="M12 11v2"></path>
+            </svg>
+            DASHBOARD
+        </div>
+        <div class="status-badge" id="conn-status">
+            <div class="status-dot"></div>
+            System Active
+        </div>
+    </header>
+
+    <main>
+        <!-- Video Feed Section -->
+        <section class="video-container">
+            <div class="video-header">
+                <h2>Live Camera (YOLOv8 + ArcFace)</h2>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Pipeline: Active</span>
+                </div>
+            </div>
+            <div
+                style="position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: #000;">
+                <img src="/video_feed" class="video-feed" alt="Video Stream">
+                <div class="scan-line"></div>
+            </div>
+        </section>
+
+        <!-- Attendance List Section -->
+        <section class="attendance-panel">
+            <div class="panel-header">
+                <h2>Today's Attendance</h2>
+                <p>Real-time sync enabled</p>
+            </div>
+            <ul class="attendance-list" id="attendance-list">
+                {% if attendance %}
+                {% for p in attendance %}
+                <li class="attendance-item">
+                    <div class="avatar">{{ p.name[0].upper() }}</div>
+                    <div class="student-info">
+                        <div class="student-name">{{ p.name }}</div>
+                        <span class="student-code">{{ p.student_code }}</span>
+                    </div>
+                    <div class="time-badge">{{ p.time }}</div>
+                </li>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" id="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <p>No one has checked in yet.</p>
+                </div>
+                {% endif %}
+            </ul>
+        </section>
+    </main>
+
+    <script>
+        // WebSocket Connection for Real-time Updates
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+
+        const connectWebSocket = () => {
+            const ws = new WebSocket(wsUrl);
+            const statusBadge = document.getElementById('conn-status');
+            const statusDot = statusBadge.querySelector('.status-dot');
+
+            ws.onopen = () => {
+                statusBadge.style.color = 'var(--success)';
+                statusBadge.style.background = 'rgba(16, 185, 129, 0.1)';
+                statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                statusDot.style.backgroundColor = 'var(--success)';
+                statusDot.style.boxShadow = '0 0 10px var(--success)';
+                statusBadge.childNodes[2].nodeValue = ' Connected';
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'new_attendance') {
+                    addAttendanceItem(data);
+                }
+            };
+
+            ws.onclose = () => {
+                statusBadge.style.color = 'var(--text-secondary)';
+                statusBadge.style.background = 'rgba(255, 255, 255, 0.05)';
+                statusBadge.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                statusDot.style.backgroundColor = 'var(--text-secondary)';
+                statusDot.style.boxShadow = 'none';
+                statusBadge.childNodes[2].nodeValue = ' Reconnecting...';
+                // Try to reconnect in 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            };
+        };
+
+        function addAttendanceItem(data) {
+            const list = document.getElementById('attendance-list');
+            const emptyState = document.getElementById('empty-state');
+
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            const initial = data.name ? data.name.charAt(0).toUpperCase() : '?';
+
+            const li = document.createElement('li');
+            li.className = 'attendance-item';
+            li.innerHTML = `
+                <div class="avatar">${initial}</div>
+                <div class="student-info">
+                    <div class="student-name">${data.name}</div>
+                    <span class="student-code">${data.student_code}</span>
+                </div>
+                <div class="time-badge">${timeString}</div>
+            `;
+
+            // Add to the top of the list
+            list.insertBefore(li, list.firstChild);
+        }
+
+        // Initialize WebSocket
+        connectWebSocket();
+    </script>
+</body>
+
+</html>

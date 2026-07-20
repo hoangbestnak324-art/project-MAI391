@@ -1,0 +1,120 @@
+import sqlite3
+import json
+import numpy as np
+
+DB_NAME = "database.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    # Bảng lưu thông tin sinh viên và vector khuôn mặt
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS students (
+            student_code TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            embedding TEXT NOT NULL
+        )
+    """)
+    
+    # Bảng lưu lịch sử điểm danh
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_code TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_code) REFERENCES students (student_code)
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
+
+def save_student(student_code: str, name: str, embedding: np.ndarray):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    # Chuyển numpy array thành list rồi sang string JSON để lưu vào SQLite
+    emb_list = embedding.tolist()
+    emb_json = json.dumps(emb_list)
+    
+    cursor.execute("""
+        INSERT OR REPLACE INTO students (student_code, name, embedding)
+        VALUES (?, ?, ?)
+    """, (student_code, name, emb_json))
+    
+    conn.commit()
+    conn.close()
+
+def load_all_students():
+    """
+    Trả về một dictionary: {student_code: {"name": name, "embedding": np.ndarray}}
+    """
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT student_code, name, embedding FROM students")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    students_data = {}
+    for row in rows:
+        student_code, name, emb_json = row
+        embedding = np.array(json.loads(emb_json), dtype=np.float32)
+        students_data[student_code] = {
+            "name": name,
+            "embedding": embedding
+        }
+    return students_data
+
+def log_attendance(student_code: str):
+    """
+    Ghi nhận điểm danh cho sinh viên. Chỉ ghi nếu hôm nay chưa điểm danh.
+    """
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    # Kiểm tra xem hôm nay sinh viên này đã điểm danh chưa
+    cursor.execute("""
+        SELECT COUNT(*) FROM attendance 
+        WHERE student_code = ? AND date(timestamp, 'localtime') = date('now', 'localtime')
+    """, (student_code,))
+    
+    count = cursor.fetchone()[0]
+    
+    is_new = False
+    if count == 0:
+        cursor.execute("INSERT INTO attendance (student_code) VALUES (?)", (student_code,))
+        is_new = True
+        
+    conn.commit()
+    conn.close()
+    return is_new
+
+def get_today_attendance():
+    """
+    Lấy danh sách điểm danh trong ngày hôm nay.
+    """
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT a.id, a.student_code, s.name, time(a.timestamp, 'localtime') as time
+        FROM attendance a
+        JOIN students s ON a.student_code = s.student_code
+        WHERE date(a.timestamp, 'localtime') = date('now', 'localtime')
+        ORDER BY a.timestamp DESC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    results = []
+    for row in rows:
+        results.append({
+            "id": row[0],
+            "student_code": row[1],
+            "name": row[2],
+            "time": row[3]
+        })
+    return results
+
+# Tự động khởi tạo DB khi module được import lần đầu
+init_db()
