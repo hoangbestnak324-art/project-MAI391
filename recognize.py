@@ -1,126 +1,125 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 1,
-   "id": "28a4d93e",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "🔄 Đang khởi tạo mô hình InsightFace...\n",
-      "Applied providers: ['CPUExecutionProvider'], with options: {'CPUExecutionProvider': {}}\n",
-      "find model: C:\\Users\\PC/.insightface\\models\\buffalo_sc\\det_500m.onnx detection [1, 3, '?', '?'] 127.5 128.0\n",
-      "Applied providers: ['CPUExecutionProvider'], with options: {'CPUExecutionProvider': {}}\n",
-      "find model: C:\\Users\\PC/.insightface\\models\\buffalo_sc\\w600k_mbf.onnx recognition ['None', 3, 112, 112] 127.5 127.5\n",
-      "set det-size: (640, 640)\n",
-      "✅ Đã tải Database với 1 sinh viên.\n",
-      "🚀 Đang mở Webcam... Bấm phím 'q' trên cửa sổ video để thoát.\n",
-      "❌ Không thể kết nối Webcam!\n",
-      "👋 Đã đóng Webcam an toàn.\n"
-     ]
-    }
-   ],
-   "source": [
-    "import cv2\n",
-    "import pickle\n",
-    "import numpy as np\n",
-    "import insightface\n",
-    "from insightface.app import FaceAnalysis\n",
-    "\n",
-    "print(\"🔄 Đang khởi tạo mô hình InsightFace...\")\n",
-    "app = FaceAnalysis(name='buffalo_sc', providers=['CPUExecutionProvider'])\n",
-    "app.prepare(ctx_id=0, det_size=(640, 640))\n",
-    "\n",
-    "# Đọc Database vector\n",
-    "try:\n",
-    "    with open(\"database.pkl\", \"rb\") as f:\n",
-    "        known_embeddings = pickle.load(f)\n",
-    "    print(f\"✅ Đã tải Database với {len(known_embeddings)} sinh viên.\")\n",
-    "except Exception as e:\n",
-    "    print(f\"❌ Lỗi không đọc được database.pkl: {e}\")\n",
-    "    exit()\n",
-    "\n",
-    "def cosine_similarity(v1, v2):\n",
-    "    return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))\n",
-    "\n",
-    "THRESHOLD = 0.3  # Đã hạ xuống 0.3 để dễ nhận diện\n",
-    "cap = cv2.VideoCapture(0)\n",
-    "\n",
-    "print(\"🚀 Đang mở Webcam... Bấm phím 'q' trên cửa sổ video để thoát.\")\n",
-    "\n",
-    "frame_count = 0\n",
-    "SKIP_FRAMES = 3 \n",
-    "cached_faces = [] \n",
-    "\n",
-    "while cap.isOpened():\n",
-    "    ret, frame = cap.read()\n",
-    "    if not ret:\n",
-    "        print(\"❌ Không thể kết nối Webcam!\")\n",
-    "        break\n",
-    "\n",
-    "    frame_count += 1\n",
-    "    if frame_count % SKIP_FRAMES == 0:\n",
-    "        cached_faces = app.get(frame)\n",
-    "\n",
-    "    for face in cached_faces:\n",
-    "        bbox = face.bbox.astype(int)\n",
-    "        x1, y1, x2, y2 = bbox[0], bbox[1], bbox[2], bbox[3]\n",
-    "        current_embedding = face.normed_embedding\n",
-    "\n",
-    "        max_similarity = -1.0\n",
-    "        identity = \"Unknown\"\n",
-    "\n",
-    "        for name, saved_embedding in known_embeddings.items():\n",
-    "            sim = cosine_similarity(current_embedding, saved_embedding)\n",
-    "            if sim > max_similarity:\n",
-    "                max_similarity = sim\n",
-    "                if sim >= THRESHOLD:\n",
-    "                    identity = name\n",
-    "\n",
-    "        if identity != \"Unknown\":\n",
-    "            color = (0, 255, 0) # Xanh lá\n",
-    "            text = f\"{identity} ({max_similarity:.2f})\"\n",
-    "        else:\n",
-    "            color = (0, 0, 255) # Đỏ\n",
-    "            text = f\"Unknown ({max_similarity:.2f})\"\n",
-    "\n",
-    "        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)\n",
-    "        cv2.putText(frame, text, (x1, y1 - 10), \n",
-    "                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)\n",
-    "\n",
-    "    cv2.imshow(\"Face Attendance - Terminal Mode\", frame)\n",
-    "\n",
-    "    if cv2.waitKey(1) & 0xFF == ord('q'):\n",
-    "        break\n",
-    "\n",
-    "cap.release()\n",
-    "cv2.destroyAllWindows()\n",
-    "print(\"👋 Đã đóng Webcam an toàn.\")"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.13.7"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+import cv2
+import pickle
+import numpy as np
+import insightface
+from insightface.app import FaceAnalysis
+import csv
+import os
+from datetime import datetime
+
+# -------------------------------------------------------------
+# 1. KHỞI TẠO FILE ĐIỂM DANH CSV THEO NGÀY
+# -------------------------------------------------------------
+today_str = datetime.now().strftime("%Y-%m-%d")
+csv_filename = f"DiemDanh_{today_str}.csv"
+
+# Nếu file chưa tồn tại -> Tạo mới và ghi dòng tiêu đề (Header)
+if not os.path.exists(csv_filename):
+    with open(csv_filename, mode='w', newline='', encoding='utf-8-sig') as f:
+        writer = csv.writer(f)
+        writer.writerow(["MSSV_HoTen", "Ngay", "ThoiGian"])
+    print(f"📄 Đã tạo file điểm danh mới: {csv_filename}")
+
+# Tập hợp (set) dùng để lưu danh sách những người đã điểm danh trong phiên làm việc
+attended_students = set()
+
+# Đọc lại các SV đã điểm danh trước đó trong ngày (nếu khởi động lại chương trình)
+if os.path.exists(csv_filename):
+    with open(csv_filename, mode='r', encoding='utf-8-sig') as f:
+        reader = csv.reader(f)
+        next(reader, None) # Bỏ qua header
+        for row in reader:
+            if row:
+                attended_students.add(row[0])
+
+# -------------------------------------------------------------
+# 2. KHỞI TẠO MÔ HÌNH INSIGHTFACE & DATABASE
+# -------------------------------------------------------------
+print("🔄 Đang khởi tạo mô hình InsightFace...")
+app = FaceAnalysis(name='buffalo_sc', providers=['CPUExecutionProvider'])
+app.prepare(ctx_id=0, det_size=(640, 640))
+
+try:
+    with open("database.pkl", "rb") as f:
+        known_embeddings = pickle.load(f)
+    print(f"✅ Đã tải Database với {len(known_embeddings)} sinh viên.")
+except Exception as e:
+    print(f"❌ Lỗi không đọc được database.pkl: {e}")
+    exit()
+
+def cosine_similarity(v1, v2):
+    return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+
+THRESHOLD = 0.3
+cap = cv2.VideoCapture(0)
+
+print("🚀 Đang mở Webcam... Nhấn phím 'q' trên cửa sổ video để thoát.")
+
+frame_count = 0
+SKIP_FRAMES = 3 
+cached_faces = [] 
+
+# -------------------------------------------------------------
+# 3. VÒNG LẶP XỬ LÝ VIDEO & ĐIỂM DANH
+# -------------------------------------------------------------
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        print("❌ Không thể kết nối Webcam!")
+        break
+
+    frame_count += 1
+    if frame_count % SKIP_FRAMES == 0:
+        cached_faces = app.get(frame)
+
+    for face in cached_faces:
+        bbox = face.bbox.astype(int)
+        x1, y1, x2, y2 = bbox[0], bbox[1], bbox[2], bbox[3]
+        current_embedding = face.normed_embedding
+
+        max_similarity = -1.0
+        identity = "Unknown"
+
+        for name, saved_embedding in known_embeddings.items():
+            sim = cosine_similarity(current_embedding, saved_embedding)
+            if sim > max_similarity:
+                max_similarity = sim
+                if sim >= THRESHOLD:
+                    identity = name
+
+        # Nếu nhận diện thành công
+        if identity != "Unknown":
+            color = (0, 255, 0) # Xanh lá
+            text = f"{identity} ({max_similarity:.2f})"
+
+            # THỰC HIỆN ĐIỂM DANH (Chỉ ghi nếu chưa điểm danh)
+            if identity not in attended_students:
+                now = datetime.now()
+                date_str = now.strftime("%Y-%m-%d")
+                time_str = now.strftime("%H:%M:%S")
+
+                # Ghi vào file CSV
+                with open(csv_filename, mode='a', newline='', encoding='utf-8-sig') as f:
+                    writer = csv.writer(f)
+                    writer.writerow([identity, date_str, time_str])
+
+                # Thêm vào danh sách đã điểm danh để không ghi trùng
+                attended_students.add(identity)
+                print(f"🎉 [ĐIỂM DANH THÀNH CÔNG] {identity} lúc {time_str}")
+
+        else:
+            color = (0, 0, 255) # Đỏ
+            text = f"Unknown ({max_similarity:.2f})"
+
+        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+        cv2.putText(frame, text, (x1, y1 - 10), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+    cv2.imshow("Face Attendance - Terminal Mode", frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
+print("👋 Đã đóng Webcam an toàn.")
