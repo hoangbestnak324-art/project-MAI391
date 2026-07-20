@@ -1,4 +1,4 @@
-# Hệ Thống Nhận Diện Khuôn Mặt & Điểm Danh Sinh Viên (VisionSync)
+# Hệ Thống Nhận Diện Khuôn Mặt & Điểm Danh Sinh Viên
 
 Hệ thống điểm danh tự động thời gian thực sử dụng **YOLOv8-face** (phát hiện khuôn mặt), **InsightFace ArcFace** (trích xuất vector đặc trưng 512D), **SQLite** (lưu trữ) và **FastAPI + WebSockets** (giao diện web).
 
@@ -10,9 +10,9 @@ Hệ thống điểm danh tự động thời gian thực sử dụng **YOLOv8-f
 
 ---
 
-## 🛠️ 1. Yêu cầu & Cài đặt môi trường
+## I. Yêu cầu & Cài đặt môi trường
 
-### 🍎 Trên macOS
+### Đối với HĐH macOS
 
 #### Bước 1: Cài đặt Python 3.12 (qua Homebrew)
 ```bash
@@ -35,7 +35,7 @@ pip install opencv-python==4.9.0.80 "scipy<1.14" "numpy<2" ultralytics insightfa
 
 ---
 
-### 🪟 Trên Windows
+### Đối với HĐH Windows
 
 #### Bước 1: Cài đặt Python 3.12
 - **Tải từ trang chủ:** Tải bản cài đặt Python 3.12 từ [python.org](https://www.python.org/downloads/release/python-3128/) *(lưu ý tích chọn **Add python.exe to PATH** khi cài)*.
@@ -64,7 +64,7 @@ pip install opencv-python==4.9.0.80 "scipy<1.14" "numpy<2" ultralytics insightfa
 
 ---
 
-## 🚀 2. Hướng dẫn chạy dự án
+## II. Hướng dẫn chạy dự án
 
 ### Bước 1: Trích xuất Vector & Tạo Database (`database.db`)
 Thêm ảnh sinh viên vào thư mục `Dataset/<Mã_Sinh_Viên>/` (ví dụ: `Dataset/SV001/img1.jpg`).
