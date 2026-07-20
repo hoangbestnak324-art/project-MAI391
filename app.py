@@ -1,16 +1,18 @@
+import os
 import cv2
 import numpy as np
 import json
 import asyncio
-from fastapi import FastAPI, WebSocket, Request, WebSocketDisconnect
-from fastapi.responses import StreamingResponse
+import time
+import base64
+from fastapi import FastAPI, WebSocket, Request, WebSocketDisconnect, UploadFile, File, Form
+from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from ultralytics import YOLO
 import insightface
 from insightface.app import FaceAnalysis
 
-from database import init_db, load_all_students, log_attendance, get_today_attendance
+from database import init_db, load_all_students, save_student, log_attendance, get_today_attendance
 
 # Initialize database
 init_db()
@@ -25,9 +27,26 @@ face_app = FaceAnalysis(name='buffalo_sc', providers=['CPUExecutionProvider'])
 face_app.prepare(ctx_id=0, det_size=(640, 640))
 print("✅ Models loaded!")
 
-# Load known students
-known_students = load_all_students()
-THRESHOLD = 0.3
+# Cache known students as NumPy matrix for fast vectorized cosine similarity
+known_students = {}
+known_codes = []
+known_names = []
+known_matrix = None
+last_notification_time = {}
+COOLDOWN_SECONDS = 6.0
+
+def refresh_student_cache():
+    global known_students, known_codes, known_names, known_matrix
+    known_students = load_all_students()
+    known_codes = list(known_students.keys())
+    known_names = [known_students[c]["name"] for c in known_codes]
+    if len(known_codes) > 0:
+        known_matrix = np.array([known_students[c]["embedding"] for c in known_codes], dtype=np.float32)
+    else:
+        known_matrix = None
+
+refresh_student_cache()
+THRESHOLD = 0.30
 
 # WebSocket connections manager
 class ConnectionManager:
@@ -51,94 +70,146 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-def cosine_similarity(v1, v2):
-    return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+def process_attendance_event(identity_code: str, identity_name: str):
+    """
+    Ghi nhận điểm danh và phát tín hiệu WebSocket tức thì về giao diện web.
+    """
+    now = time.time()
+    last_time = last_notification_time.get(identity_code, 0)
+    
+    if now - last_time >= COOLDOWN_SECONDS:
+        is_new = log_attendance(identity_code)
+        last_notification_time[identity_code] = now
+        time_str = time.strftime("%H:%M:%S")
+        
+        asyncio.create_task(manager.broadcast(json.dumps({
+            "type": "new_attendance",
+            "student_code": identity_code,
+            "name": identity_name,
+            "is_new": is_new,
+            "time": time_str
+        })))
 
 async def generate_frames():
+    refresh_student_cache()
+
     cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        cap = cv2.VideoCapture(1)
+
+    if cap.isOpened():
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
     frame_skip = 2
     frame_count = 0
     cached_identities = []
-    
-    while True:
-        success, frame = cap.read()
-        if not success:
-            break
-        else:
+
+    try:
+        while True:
+            if not cap.isOpened():
+                blank_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                cv2.putText(blank_frame, "Camera Not Available / In Use", (80, 240),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                ret, buffer = cv2.imencode('.jpg', blank_frame)
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+                await asyncio.sleep(1.0)
+                continue
+
+            success, frame = cap.read()
+            if not success or frame is None:
+                await asyncio.sleep(0.01)
+                continue
+
             frame_count += 1
             if frame_count % frame_skip == 0:
                 cached_identities = []
-                # 1. Phát hiện khuôn mặt bằng YOLOv8
-                results = yolo_model(frame, verbose=False)
-                
-                for r in results:
-                    boxes = r.boxes
-                    for box in boxes:
-                        x1, y1, x2, y2 = map(int, box.xyxy[0])
-                        h, w, _ = frame.shape
-                        padding = 10
-                        px1, py1 = max(0, x1 - padding), max(0, y1 - padding)
-                        px2, py2 = min(w, x2 + padding), min(h, y2 + padding)
-                        
-                        face_crop = frame[py1:py2, px1:px2]
-                        if face_crop.size == 0:
-                            continue
-                            
-                        # 2. Trích xuất vector 512D bằng InsightFace
-                        faces = face_app.get(face_crop)
-                        if len(faces) > 0:
-                            current_embedding = faces[0].normed_embedding
-                        else:
-                            faces_full = face_app.get(frame)
-                            if len(faces_full) > 0:
-                                current_embedding = faces_full[0].normed_embedding
-                            else:
-                                continue
-                                
-                        # 3. So khớp với CSDL
-                        max_similarity = -1.0
+
+                # 1. Trích xuất khuôn mặt & vector 512D trực tiếp từ frame bằng InsightFace
+                faces = face_app.get(frame)
+
+                if len(faces) > 0:
+                    for f in faces:
+                        x1, y1, x2, y2 = map(int, f.bbox)
+                        current_embedding = f.normed_embedding
+
                         identity_code = "Unknown"
                         identity_name = "Unknown"
-                        
-                        for student_code, data in known_students.items():
-                            sim = cosine_similarity(current_embedding, data["embedding"])
-                            if sim > max_similarity:
-                                max_similarity = sim
-                                if sim >= THRESHOLD:
-                                    identity_code = student_code
-                                    identity_name = data["name"]
-                        
+                        max_similarity = -1.0
+
+                        if known_matrix is not None and len(known_matrix) > 0:
+                            similarities = np.dot(known_matrix, current_embedding)
+                            best_idx = np.argmax(similarities)
+                            max_similarity = similarities[best_idx]
+
+                            if max_similarity >= THRESHOLD:
+                                identity_code = known_codes[best_idx]
+                                identity_name = known_names[best_idx]
+
                         cached_identities.append((x1, y1, x2, y2, identity_code, identity_name, float(max_similarity)))
-                        
-                        # 4. Ghi nhận điểm danh & broadcast WebSocket
+
                         if identity_code != "Unknown":
-                            is_new = log_attendance(identity_code)
-                            if is_new:
-                                # Gửi update cho tất cả client
-                                asyncio.create_task(manager.broadcast(json.dumps({
-                                    "type": "new_attendance",
-                                    "student_code": identity_code,
-                                    "name": identity_name
-                                })))
-            
-            # Vẽ bounding box
+                            process_attendance_event(identity_code, identity_name)
+                else:
+                    # 2. Fallback: Phát hiện bằng YOLOv8-face
+                    results = yolo_model(frame, verbose=False, imgsz=320)
+                    for r in results:
+                        boxes = r.boxes
+                        for box in boxes:
+                            x1, y1, x2, y2 = map(int, box.xyxy[0])
+                            h, w, _ = frame.shape
+                            padding = 30
+                            px1, py1 = max(0, x1 - padding), max(0, y1 - padding)
+                            px2, py2 = min(w, x2 + padding), min(h, y2 + padding)
+
+                            face_crop = frame[py1:py2, px1:px2]
+                            if face_crop.size == 0:
+                                continue
+
+                            faces_crop = face_app.get(face_crop)
+                            if len(faces_crop) > 0:
+                                current_embedding = faces_crop[0].normed_embedding
+
+                                identity_code = "Unknown"
+                                identity_name = "Unknown"
+                                max_similarity = -1.0
+
+                                if known_matrix is not None and len(known_matrix) > 0:
+                                    similarities = np.dot(known_matrix, current_embedding)
+                                    best_idx = np.argmax(similarities)
+                                    max_similarity = similarities[best_idx]
+
+                                    if max_similarity >= THRESHOLD:
+                                        identity_code = known_codes[best_idx]
+                                        identity_name = known_names[best_idx]
+
+                                cached_identities.append((x1, y1, x2, y2, identity_code, identity_name, float(max_similarity)))
+
+                                if identity_code != "Unknown":
+                                    process_attendance_event(identity_code, identity_name)
+
+            # Vẽ bounding box & thông tin nhận diện lên frame
             for (x1, y1, x2, y2, code, name, sim) in cached_identities:
                 color = (0, 255, 0) if code != "Unknown" else (0, 0, 255)
                 text = f"{name} ({sim:.2f})" if code != "Unknown" else f"Unknown ({sim:.2f})"
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(frame, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-                
-            ret, buffer = cv2.imencode('.jpg', frame)
+                cv2.putText(frame, text, (x1, max(y1 - 10, 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+            ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
             frame_bytes = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-            
-            # Non-blocking yield for async loop
-            await asyncio.sleep(0.01)
+
+            await asyncio.sleep(0.001)
+    finally:
+        if cap is not None and cap.isOpened():
+            cap.release()
 
 @app.get("/")
 async def index(request: Request):
-    # Lấy danh sách điểm danh hôm nay
+    refresh_student_cache()
     attendance = get_today_attendance()
     return templates.TemplateResponse(request=request, name="index.html", context={"attendance": attendance})
 
@@ -154,3 +225,80 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
+@app.post("/api/register_student")
+async def register_student(
+    student_code: str = Form(...),
+    name: str = Form(...),
+    file: UploadFile = File(None),
+    image_data: str = Form(None)
+):
+    """
+    API đăng ký khuôn mặt mới cho sinh viên.
+    """
+    try:
+        student_code = student_code.strip()
+        name = name.strip()
+
+        if not student_code or not name:
+            return JSONResponse({"success": False, "message": "Vui lòng nhập đầy đủ Mã sinh viên và Họ tên!"}, status_code=400)
+
+        img_np = None
+
+        # 1. Đọc ảnh từ file tải lên
+        if file and file.filename:
+            contents = await file.read()
+            nparr = np.frombuffer(contents, np.uint8)
+            img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        # 2. Đọc ảnh từ snapshot webcam base64
+        elif image_data:
+            if "," in image_data:
+                image_data = image_data.split(",")[1]
+            img_bytes = base64.b64decode(image_data)
+            nparr = np.frombuffer(img_bytes, np.uint8)
+            img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if img_np is None or img_np.size == 0:
+            return JSONResponse({"success": False, "message": "Không đọc được dữ liệu hình ảnh!"}, status_code=400)
+
+        # 3. Trích xuất vector 512D bằng InsightFace
+        faces = face_app.get(img_np)
+        embedding = None
+
+        if len(faces) > 0:
+            embedding = faces[0].normed_embedding
+        else:
+            # Fallback YOLOv8 + InsightFace crop
+            results = yolo_model(img_np, verbose=False, imgsz=320)
+            for r in results:
+                for box in r.boxes:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    h, w, _ = img_np.shape
+                    px1, py1 = max(0, x1 - 30), max(0, y1 - 30)
+                    px2, py2 = min(w, x2 + 30), min(h, y2 + 30)
+                    crop = img_np[py1:py2, px1:px2]
+                    if crop.size > 0:
+                        fc = face_app.get(crop)
+                        if len(fc) > 0:
+                            embedding = fc[0].normed_embedding
+                            break
+            if embedding is None:
+                return JSONResponse({"success": False, "message": "Không tìm thấy khuôn mặt rõ ràng trong ảnh! Vui lòng chọn/chụp lại ảnh khác."}, status_code=400)
+
+        # 4. Lưu ảnh khuôn mặt vào Dataset/<student_code>/
+        save_dir = os.path.join("Dataset", student_code)
+        os.makedirs(save_dir, exist_ok=True)
+        img_filename = f"img_{int(time.time())}.jpg"
+        cv2.imwrite(os.path.join(save_dir, img_filename), img_np)
+
+        # 5. Cập nhật SQLite & Bộ nhớ RAM Cache
+        save_student(student_code, name, embedding)
+        refresh_student_cache()
+
+        return JSONResponse({
+            "success": True,
+            "message": f"🎉 Đã đăng ký thành công cho sinh viên: {name} ({student_code})!"
+        })
+
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Lỗi hệ thống: {str(e)}"}, status_code=500)

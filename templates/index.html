@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VisionSync | AI Face Attendance System</title>
+    <title>Visual Attendance | AI Face Attendance System</title>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <style>
-        /* Apple & Modern Dark Gallery Design Tokens (from DESIGN.md) */
+        /* Apple & Modern Dark/Light Gallery Design Tokens (from DESIGN.md) */
         :root {
             --primary: #0066cc;
             --primary-focus: #0071e3;
@@ -21,6 +23,7 @@
             --panel-border: rgba(255, 255, 255, 0.08);
             --panel-card: rgba(255, 255, 255, 0.03);
             --panel-card-hover: rgba(255, 255, 255, 0.07);
+            --header-bg: rgba(11, 15, 25, 0.8);
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --text-muted: #64748b;
@@ -33,6 +36,25 @@
             --radius-lg: 18px;
             --radius-pill: 9999px;
             --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+            --brand-title-gradient: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --video-bg: #040711;
+        }
+
+        /* LIGHT MODE DESIGN TOKENS */
+        :root[data-theme="light"] {
+            --bg-color: #f5f5f7;
+            --panel-bg: rgba(255, 255, 255, 0.82);
+            --panel-border: rgba(0, 0, 0, 0.08);
+            --panel-card: rgba(0, 0, 0, 0.03);
+            --panel-card-hover: rgba(0, 0, 0, 0.06);
+            --header-bg: rgba(255, 255, 255, 0.85);
+            --text-primary: #1d1d1f;
+            --text-secondary: #515154;
+            --text-muted: #86868b;
+            --brand-title-gradient: linear-gradient(180deg, #1d1d1f 0%, #424245 100%);
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --video-bg: #1e1e24;
         }
 
         * {
@@ -41,6 +63,7 @@
             box-sizing: border-box;
             font-family: var(--font-family);
             -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         body {
@@ -50,14 +73,14 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(0, 102, 204, 0.12) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(0, 102, 204, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.06) 0%, transparent 40%);
         }
 
         /* HEADER */
         header {
-            background: rgba(11, 15, 25, 0.8);
+            background: var(--header-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--panel-border);
@@ -92,7 +115,7 @@
             font-size: 1.25rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            background: var(--brand-title-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -113,7 +136,7 @@
             font-size: 0.875rem;
             font-family: monospace;
             color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--panel-card);
             padding: 0.35rem 0.85rem;
             border-radius: var(--radius-pill);
             border: 1px solid var(--panel-border);
@@ -123,14 +146,13 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.12);
             color: var(--success);
             padding: 0.45rem 1rem;
             border-radius: var(--radius-pill);
             font-size: 0.85rem;
             font-weight: 500;
             border: 1px solid rgba(16, 185, 129, 0.25);
-            transition: all 0.3s ease;
         }
 
         .status-dot {
@@ -143,9 +165,20 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
         }
 
         /* MAIN LAYOUT */
@@ -168,7 +201,7 @@
             border-radius: var(--radius-lg);
             overflow: hidden;
             border: 1px solid var(--panel-border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 20px 40px var(--shadow-color);
             display: flex;
             flex-direction: column;
             position: relative;
@@ -180,7 +213,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.25);
+            background: var(--panel-card);
         }
 
         .video-header-title {
@@ -214,7 +247,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #040711;
+            background: var(--video-bg);
             min-height: 480px;
         }
 
@@ -227,51 +260,15 @@
             display: block;
         }
 
-        .scan-line {
-            position: absolute;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.8), transparent);
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.9);
-            top: 0;
-            left: 0;
-            animation: scan 3.5s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        @keyframes scan {
-            0% { top: 0; opacity: 0; }
-            15% { opacity: 1; }
-            85% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-        }
-
         .video-footer {
             padding: 0.85rem 1.5rem;
             border-top: 1px solid var(--panel-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--panel-card);
             font-size: 0.8rem;
             color: var(--text-muted);
-        }
-
-        .toggle-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--panel-border);
-            color: var(--text-secondary);
-            padding: 0.35rem 0.75rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: var(--text-primary);
         }
 
         /* ATTENDANCE LIST PANEL */
@@ -284,7 +281,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 20px 40px var(--shadow-color);
             height: calc(100vh - 120px);
             max-height: 820px;
         }
@@ -292,7 +289,7 @@
         .panel-header {
             padding: 1.25rem 1.5rem;
             border-bottom: 1px solid var(--panel-border);
-            background: rgba(0, 0, 0, 0.25);
+            background: var(--panel-card);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -311,7 +308,7 @@
         }
 
         .count-chip {
-            background: rgba(0, 102, 204, 0.2);
+            background: rgba(0, 102, 204, 0.18);
             color: var(--primary-on-dark);
             font-size: 0.8rem;
             font-weight: 600;
@@ -323,19 +320,18 @@
         .search-box {
             padding: 0.85rem 1.25rem;
             border-bottom: 1px solid var(--panel-border);
-            background: rgba(0, 0, 0, 0.15);
+            background: var(--panel-card);
         }
 
         .search-input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--panel-card);
             border: 1px solid var(--panel-border);
             border-radius: var(--radius-sm);
             padding: 0.55rem 0.85rem;
             color: var(--text-primary);
             font-size: 0.85rem;
             outline: none;
-            transition: all 0.2s ease;
         }
 
         .search-input:focus {
@@ -353,11 +349,13 @@
         .attendance-list::-webkit-scrollbar {
             width: 5px;
         }
+
         .attendance-list::-webkit-scrollbar-track {
             background: transparent;
         }
+
         .attendance-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(128, 128, 128, 0.2);
             border-radius: 10px;
         }
 
@@ -370,20 +368,26 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             animation: slideIn 0.35s ease-out forwards;
         }
 
         .attendance-item:hover {
             transform: translateY(-2px);
             background: var(--panel-card-hover);
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            border-color: var(--panel-border);
+            box-shadow: 0 6px 16px var(--shadow-color);
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .avatar {
@@ -419,20 +423,20 @@
             color: var(--text-secondary);
             font-size: 0.75rem;
             font-family: monospace;
-            background: rgba(0, 0, 0, 0.35);
+            background: var(--panel-card);
             padding: 0.15rem 0.45rem;
             border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
             display: inline-block;
         }
 
         .time-badge {
             font-size: 0.75rem;
             color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--panel-card);
             padding: 0.35rem 0.75rem;
             border-radius: var(--radius-pill);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--panel-border);
             white-space: nowrap;
         }
 
@@ -454,24 +458,412 @@
             font-size: 0.9rem;
         }
 
+        /* FLOATING THEME SWITCHER (FLOATING ACTION BUTTON) */
+        .theme-toggle-fab {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            z-index: 999;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .theme-toggle-fab:hover {
+            transform: scale(1.12) rotate(12deg);
+            box-shadow: 0 14px 36px rgba(0, 102, 204, 0.35);
+            border-color: var(--primary-on-dark);
+        }
+
+        .theme-toggle-fab:active {
+            transform: scale(0.92);
+        }
+
+        .sun-icon {
+            display: block;
+            color: #f59e0b;
+        }
+
+        .moon-icon {
+            display: none;
+            color: #6366f1;
+        }
+
+        :root[data-theme="light"] .sun-icon {
+            display: none;
+        }
+
+        :root[data-theme="light"] .moon-icon {
+            display: block;
+        }
+
+        /* FLOATING TOAST NOTIFICATION SYSTEM */
+        .toast-container {
+            position: fixed;
+            top: 90px;
+            right: 28px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+            max-width: 380px;
+            width: calc(100% - 56px);
+        }
+
+        .toast-card {
+            pointer-events: auto;
+            background: rgba(16, 185, 129, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 0.95rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            animation: slideToastIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transition: all 0.35s ease;
+        }
+
+        .toast-card.toast-fadeOut {
+            opacity: 0;
+            transform: translateX(100px) scale(0.9);
+        }
+
+        @keyframes slideToastIn {
+            from {
+                opacity: 0;
+                transform: translateX(120px) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .toast-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .toast-body {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .toast-code {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            font-family: monospace;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, var(--primary), var(--primary-focus));
+            color: #ffffff;
+            border: none;
+            padding: 0.45rem 1rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.45);
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 520px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.92);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--panel-border);
+            background: var(--panel-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-group input[type="text"] {
+            background: var(--panel-card);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.85rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-group input[type="text"]:focus {
+            border-color: var(--primary-on-dark);
+            box-shadow: 0 0 0 2px rgba(41, 151, 255, 0.2);
+        }
+
+        .image-source-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.2rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: var(--panel-card);
+            border: 1px solid var(--panel-border);
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 102, 204, 0.2);
+            color: var(--primary-on-dark);
+            border-color: rgba(41, 151, 255, 0.4);
+        }
+
+        .snap-preview-box {
+            background: var(--video-bg);
+            border: 1px dashed var(--panel-border);
+            border-radius: var(--radius-md);
+            min-height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 0.6rem;
+        }
+
+        .snap-placeholder {
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .btn-snap-action {
+            width: 100%;
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            padding: 0.6rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .btn-snap-action:hover {
+            background: rgba(6, 182, 212, 0.25);
+        }
+
+        .alert-box {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .alert-box.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .alert-box.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--panel-border);
+            background: var(--panel-card);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .btn-cancel {
+            background: var(--panel-card);
+            border: 1px solid var(--panel-border);
+            color: var(--text-secondary);
+            padding: 0.55rem 1.1rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 0.55rem 1.3rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-focus);
+        }
+
         /* RESPONSIVE */
         @media (max-width: 1024px) {
             main {
                 grid-template-columns: 1fr;
             }
+
             .attendance-panel {
                 height: 500px;
+            }
+
+            .theme-toggle-fab {
+                bottom: 20px;
+                right: 20px;
+                width: 46px;
+                height: 46px;
+            }
+
+            .toast-container {
+                top: 80px;
+                right: 16px;
+                left: 16px;
+                width: auto;
+                max-width: none;
             }
         }
     </style>
 </head>
+
 <body>
 
     <!-- HEADER -->
     <header>
         <div class="brand">
             <div class="brand-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
                     <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
                     <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
@@ -481,12 +873,20 @@
                 </svg>
             </div>
             <div>
-                <h1 class="brand-title">VisionSync</h1>
-                <div class="brand-subtitle">AI Face Attendance Dashboard</div>
+                <h1 class="brand-title">Visual Attendance</h1>
+                <div class="brand-subtitle">Dashboard</div>
             </div>
         </div>
 
         <div class="header-meta">
+            <button class="btn-register" onclick="openRegisterModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Đăng Ký Mới</span>
+            </button>
             <div class="live-clock" id="live-clock">--:--:--</div>
             <div class="status-badge" id="conn-status">
                 <div class="status-dot"></div>
@@ -501,11 +901,12 @@
         <section class="video-container">
             <div class="video-header">
                 <div class="video-header-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-on-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-on-dark)"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M23 7l-7 5 7 5V7z"></path>
                         <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
                     </svg>
-                    <h2>Live Camera Stream</h2>
+                    <h2>Live Camera</h2>
                 </div>
                 <div class="pipeline-pill">
                     <span style="width: 6px; height: 6px; background: var(--accent-cyan); border-radius: 50%;"></span>
@@ -515,12 +916,10 @@
 
             <div class="video-wrapper">
                 <img src="/video_feed" class="video-feed" alt="Camera Live Feed">
-                <div class="scan-line" id="scan-line"></div>
             </div>
 
             <div class="video-footer">
                 <span>Trạng thái: Real-time Face Recognition Active</span>
-                <button class="toggle-btn" onclick="toggleScanLine()">Bật/Tắt Laser Scan</button>
             </div>
         </section>
 
@@ -537,38 +936,323 @@
             </div>
 
             <div class="search-box">
-                <input type="text" class="search-input" id="search-input" placeholder="🔍 Tìm tên hoặc mã sinh viên..." oninput="filterAttendance()">
+                <input type="text" class="search-input" id="search-input" placeholder="🔍 Tìm tên hoặc mã sinh viên..."
+                    oninput="filterAttendance()">
             </div>
 
             <ul class="attendance-list" id="attendance-list">
                 {% if attendance %}
-                    {% for p in attendance %}
-                    <li class="attendance-item" data-code="{{ p.student_code }}" data-name="{{ p.name }}">
-                        <div class="avatar">{{ p.name[0].upper() if p.name else '?' }}</div>
-                        <div class="student-info">
-                            <div class="student-name">{{ p.name }}</div>
-                            <span class="student-code">{{ p.student_code }}</span>
-                        </div>
-                        <div class="time-badge">{{ p.time }}</div>
-                    </li>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state" id="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                        <p>Chưa có sinh viên nào điểm danh hôm nay.</p>
+                {% for p in attendance %}
+                <li class="attendance-item" data-code="{{ p.student_code }}" data-name="{{ p.name }}">
+                    <div class="avatar">{{ p.name[0].upper() if p.name else '?' }}</div>
+                    <div class="student-info">
+                        <div class="student-name">{{ p.name }}</div>
+                        <span class="student-code">{{ p.student_code }}</span>
                     </div>
+                    <div class="time-badge">{{ p.time }}</div>
+                </li>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" id="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <p>Chưa có sinh viên nào điểm danh hôm nay.</p>
+                </div>
                 {% endif %}
             </ul>
         </section>
     </main>
 
+    <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- REGISTER STUDENT MODAL OVERLAY -->
+    <div class="modal-overlay" id="register-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Đăng Ký Khuôn Mặt Sinh Viên Mới</h3>
+                <button class="close-btn" onclick="closeRegisterModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="register-alert" class="alert-box" style="display:none;"></div>
+
+                <div class="form-group">
+                    <label>Mã Sinh Viên (MSSV)</label>
+                    <input type="text" id="reg-student-code" placeholder="Ví dụ: SE..." required>
+                </div>
+
+                <div class="form-group">
+                    <label>Họ và Tên</label>
+                    <input type="text" id="reg-name" placeholder="Ví dụ: Nguyễn Văn Mười..." required>
+                </div>
+
+                <div class="form-group">
+                    <label>Hình Ảnh Khuôn Mặt</label>
+                    <div class="image-source-tabs">
+                        <button type="button" class="tab-btn active" id="tab-snap" onclick="switchImageTab('snap')">📷
+                            Chụp Từ Camera</button>
+                        <button type="button" class="tab-btn" id="tab-upload" onclick="switchImageTab('upload')">📁 Tải
+                            File Ảnh</button>
+                    </div>
+                </div>
+
+                <!-- SNAP SECTION -->
+                <div id="section-snap" class="source-section">
+                    <div class="snap-preview-box"
+                        style="position: relative; background: var(--video-bg); border-radius: 12px; overflow: hidden; min-height: 240px; display: flex; align-items: center; justify-content: center;">
+                        <!-- Canvas Mirror for Live Stream & Snapshot -->
+                        <canvas id="snap-canvas" width="640" height="480"
+                            style="display:block; width:100%; height:240px; object-fit:cover; border-radius:12px;"></canvas>
+
+                        <!-- Status Badge Overlay -->
+                        <div id="snap-badge"
+                            style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: var(--accent-cyan); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
+                            <span id="snap-badge-dot"
+                                style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;"></span>
+                            <span id="snap-badge-text">Camera Trực Tiếp</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-snap-action" id="btn-snap-toggle" onclick="handleSnapToggle()"
+                        style="margin-top: 0.75rem;">📸 Chụp Ảnh Ngay</button>
+                </div>
+
+                <!-- UPLOAD SECTION -->
+                <div id="section-upload" class="source-section" style="display:none;">
+                    <input type="file" id="reg-file" accept="image/*"
+                        style="width:100%; padding:0.55rem; background:var(--panel-card); border:1px solid var(--panel-border); border-radius:8px; color:var(--text-primary);">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeRegisterModal()">Hủy</button>
+                <button class="btn-submit" id="btn-submit-reg" onclick="submitRegistration()">Lưu & Trích Xuất
+                    Vector</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING THEME SWITCHER BUTTON -->
+    <button class="theme-toggle-fab" id="theme-toggle-btn" onclick="toggleTheme()"
+        title="Chuyển đổi giao diện Sáng / Tối">
+        <!-- Sun icon (shown in Dark mode) -->
+        <svg class="sun-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <!-- Moon icon (shown in Light mode) -->
+        <svg class="moon-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </button>
+
     <!-- SCRIPTS -->
     <script>
+        let capturedBase64 = null;
+        let livePreviewInterval = null;
+
+        function startModalLiveMirror() {
+            stopModalLiveMirror();
+            const mainFeed = document.querySelector('.video-feed');
+            const canvas = document.getElementById('snap-canvas');
+            const badgeText = document.getElementById('snap-badge-text');
+            const badgeDot = document.getElementById('snap-badge-dot');
+            const btnToggle = document.getElementById('btn-snap-toggle');
+
+            if (!canvas || !mainFeed) return;
+            const ctx = canvas.getContext('2d');
+
+            if (btnToggle) {
+                btnToggle.textContent = '📸 Chụp Ảnh Ngay';
+                btnToggle.style.background = 'rgba(6, 182, 212, 0.15)';
+                btnToggle.style.color = 'var(--accent-cyan)';
+            }
+            if (badgeText) badgeText.textContent = 'Camera Trực Tiếp';
+            if (badgeDot) badgeDot.style.background = 'var(--success)';
+
+            livePreviewInterval = setInterval(() => {
+                if (mainFeed.complete && mainFeed.naturalWidth > 0) {
+                    canvas.width = mainFeed.naturalWidth || 640;
+                    canvas.height = mainFeed.naturalHeight || 480;
+                    ctx.drawImage(mainFeed, 0, 0, canvas.width, canvas.height);
+                }
+            }, 40);
+        }
+
+        function stopModalLiveMirror() {
+            if (livePreviewInterval) {
+                clearInterval(livePreviewInterval);
+                livePreviewInterval = null;
+            }
+        }
+
+        function openRegisterModal() {
+            document.getElementById('register-modal').classList.add('active');
+            document.getElementById('register-alert').style.display = 'none';
+            capturedBase64 = null;
+            switchImageTab('snap');
+            startModalLiveMirror();
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('register-modal').classList.remove('active');
+            stopModalLiveMirror();
+            capturedBase64 = null;
+        }
+
+        function switchImageTab(tab) {
+            document.getElementById('tab-snap').classList.toggle('active', tab === 'snap');
+            document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+            document.getElementById('section-snap').style.display = (tab === 'snap') ? 'block' : 'none';
+            document.getElementById('section-upload').style.display = (tab === 'upload') ? 'block' : 'none';
+
+            if (tab === 'snap') {
+                if (!capturedBase64) startModalLiveMirror();
+            } else {
+                stopModalLiveMirror();
+            }
+        }
+
+        function handleSnapToggle() {
+            if (!capturedBase64) {
+                takeSnapshot();
+            } else {
+                capturedBase64 = null;
+                startModalLiveMirror();
+            }
+        }
+
+        function takeSnapshot() {
+            const mainFeed = document.querySelector('.video-feed');
+            const canvas = document.getElementById('snap-canvas');
+            const badgeText = document.getElementById('snap-badge-text');
+            const badgeDot = document.getElementById('snap-badge-dot');
+            const btnToggle = document.getElementById('btn-snap-toggle');
+
+            stopModalLiveMirror();
+
+            if (canvas && mainFeed) {
+                const ctx = canvas.getContext('2d');
+                canvas.width = mainFeed.naturalWidth || 640;
+                canvas.height = mainFeed.naturalHeight || 480;
+                ctx.drawImage(mainFeed, 0, 0, canvas.width, canvas.height);
+                capturedBase64 = canvas.toDataURL('image/jpeg');
+            }
+
+            if (btnToggle) {
+                btnToggle.textContent = '🔄 Chụp Lại Ảnh Khác';
+                btnToggle.style.background = 'rgba(234, 179, 8, 0.15)';
+                btnToggle.style.color = 'var(--warning)';
+            }
+            if (badgeText) badgeText.textContent = 'Ảnh Đã Chụp';
+            if (badgeDot) badgeDot.style.background = 'var(--warning)';
+        }
+
+        async function submitRegistration() {
+            const studentCode = document.getElementById('reg-student-code').value.trim();
+            const name = document.getElementById('reg-name').value.trim();
+            const alertBox = document.getElementById('register-alert');
+            const submitBtn = document.getElementById('btn-submit-reg');
+
+            if (!studentCode || !name) {
+                alertBox.className = 'alert-box error';
+                alertBox.textContent = '❌ Vui lòng nhập đầy đủ Mã sinh viên và Họ tên!';
+                alertBox.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('student_code', studentCode);
+            formData.append('name', name);
+
+            const activeTab = document.getElementById('tab-snap').classList.contains('active') ? 'snap' : 'upload';
+
+            if (activeTab === 'snap') {
+                if (!capturedBase64) {
+                    alertBox.className = 'alert-box error';
+                    alertBox.textContent = '❌ Vui lòng bấm nút "Chụp Ảnh Ngay" trước khi lưu!';
+                    alertBox.style.display = 'block';
+                    return;
+                }
+                formData.append('image_data', capturedBase64);
+            } else {
+                const fileInput = document.getElementById('reg-file');
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alertBox.className = 'alert-box error';
+                    alertBox.textContent = '❌ Vui lòng chọn 1 file ảnh từ máy tính!';
+                    alertBox.style.display = 'block';
+                    return;
+                }
+                formData.append('file', fileInput.files[0]);
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '🔄 Đang trích xuất Vector...';
+
+            try {
+                const response = await fetch('/api/register_student', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alertBox.className = 'alert-box success';
+                    alertBox.textContent = result.message;
+                    alertBox.style.display = 'block';
+
+                    setTimeout(() => {
+                        closeRegisterModal();
+                        document.getElementById('reg-student-code').value = '';
+                        document.getElementById('reg-name').value = '';
+                        resetSnapState();
+                    }, 1800);
+                } else {
+                    alertBox.className = 'alert-box error';
+                    alertBox.textContent = '❌ ' + result.message;
+                    alertBox.style.display = 'block';
+                }
+            } catch (err) {
+                alertBox.className = 'alert-box error';
+                alertBox.textContent = '❌ Lỗi kết nối server: ' + err.message;
+                alertBox.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Lưu & Trích Xuất Vector';
+            }
+        }
+
+        // Theme Toggle Logic & Persistence
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        initTheme();
+
         // Clock Script
         function updateClock() {
             const now = new Date();
@@ -578,17 +1262,11 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Toggle Scan Line
-        function toggleScanLine() {
-            const scanLine = document.getElementById('scan-line');
-            scanLine.style.display = (scanLine.style.display === 'none') ? 'block' : 'none';
-        }
-
         // WebSocket Real-Time Sync
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/ws`;
-        
-        let attendanceCount = {{ attendance|length if attendance else 0 }};
+
+        let attendanceCount = {{ attendance| length if attendance else 0 }};
 
         const connectWebSocket = () => {
             const ws = new WebSocket(wsUrl);
@@ -598,7 +1276,7 @@
 
             ws.onopen = () => {
                 statusBadge.style.color = 'var(--success)';
-                statusBadge.style.background = 'rgba(16, 185, 129, 0.1)';
+                statusBadge.style.background = 'rgba(16, 185, 129, 0.12)';
                 statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.25)';
                 statusDot.style.backgroundColor = 'var(--success)';
                 statusDot.style.boxShadow = '0 0 10px var(--success)';
@@ -614,8 +1292,8 @@
 
             ws.onclose = () => {
                 statusBadge.style.color = 'var(--text-secondary)';
-                statusBadge.style.background = 'rgba(255, 255, 255, 0.05)';
-                statusBadge.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                statusBadge.style.background = 'var(--panel-card)';
+                statusBadge.style.borderColor = 'var(--panel-border)';
                 statusDot.style.backgroundColor = 'var(--text-muted)';
                 statusDot.style.boxShadow = 'none';
                 statusText.textContent = 'Đang kết nối lại...';
@@ -623,23 +1301,89 @@
             };
         };
 
+        // Audio Chime Synthesizer on check-in
+        function playChime() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, now);
+                gain1.gain.setValueAtTime(0.12, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.25);
+
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(659.25, now + 0.1);
+                gain2.gain.setValueAtTime(0.18, now + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.1);
+                osc2.stop(now + 0.45);
+            } catch (e) { }
+        }
+
+        // Show Toast Notification
+        function showToast(name, studentCode, isNew = true) {
+            playChime();
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-card';
+            const titleText = isNew ? 'Điểm danh mới thành công!' : 'Đã ghi nhận điểm danh';
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">
+                        <span>${titleText}</span>
+                    </div>
+                    <div class="toast-body">${name}</div>
+                    <div class="toast-code">MSSV: ${studentCode}</div>
+                </div>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('toast-fadeOut');
+                setTimeout(() => toast.remove(), 400);
+            }, 3800);
+        }
+
         function addAttendanceItem(data) {
+            // Thông báo Toast nổi & phát âm thanh bíp ngay lập tức
+            showToast(data.name, data.student_code, data.is_new);
+
             const list = document.getElementById('attendance-list');
             const emptyState = document.getElementById('empty-state');
-            
+
             if (emptyState) {
                 emptyState.remove();
             }
 
-            // Check if already in list
+            // Nếu đã có trong danh sách UI thì nháy nổi bật thẻ đó
             const existing = document.querySelector(`[data-code="${data.student_code}"]`);
-            if (existing) return;
+            if (existing) {
+                existing.style.animation = 'none';
+                existing.offsetHeight; // trigger reflow
+                existing.style.animation = 'slideIn 0.35s ease-out forwards';
+                return;
+            }
 
             attendanceCount++;
             document.getElementById('total-count').textContent = `${attendanceCount} Sinh viên`;
 
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('vi-VN', { hour12: false });
+            const timeString = data.time || new Date().toLocaleTimeString('vi-VN', { hour12: false });
             const initial = data.name ? data.name.charAt(0).toUpperCase() : '?';
 
             const li = document.createElement('li');
@@ -654,7 +1398,7 @@
                 </div>
                 <div class="time-badge">${timeString}</div>
             `;
-            
+
             list.insertBefore(li, list.firstChild);
         }
 
@@ -662,7 +1406,7 @@
         function filterAttendance() {
             const query = document.getElementById('search-input').value.toLowerCase();
             const items = document.querySelectorAll('.attendance-item');
-            
+
             items.forEach(item => {
                 const name = (item.getAttribute('data-name') || '').toLowerCase();
                 const code = (item.getAttribute('data-code') || '').toLowerCase();
@@ -677,4 +1421,5 @@
         connectWebSocket();
     </script>
 </body>
+
 </html>
