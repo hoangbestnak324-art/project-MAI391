@@ -6,7 +6,7 @@ import asyncio
 import time
 import base64
 from fastapi import FastAPI, WebSocket, Request, WebSocketDisconnect, UploadFile, File, Form
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from ultralytics import YOLO
 import insightface
@@ -387,3 +387,190 @@ async def reset_attendance_api():
         })
     except Exception as e:
         return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
+
+
+def recalculate_student_embedding(student_code: str, name: str = None):
+    """
+    Tính toán lại vector đặc trưng trung bình (mean embedding) chuẩn hóa cho sinh viên
+    dựa trên tất cả các ảnh có trong thư mục Dataset/<student_code>/, sau đó cập nhật CSDL SQLite và RAM Cache.
+    """
+    save_dir = os.path.join("Dataset", student_code)
+    if not os.path.exists(save_dir):
+        return 0
+
+    if not name:
+        all_st = load_all_students()
+        if student_code in all_st:
+            name = all_st[student_code]["name"]
+        else:
+            name = student_code
+
+    valid_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.webp')
+    img_files = [f for f in os.listdir(save_dir) if f.lower().endswith(valid_extensions)]
+
+    vectors = []
+    for img_file in img_files:
+        img_path = os.path.join(save_dir, img_file)
+        img = cv2.imread(img_path)
+        if img is None or img.size == 0:
+            continue
+
+        faces = face_app.get(img)
+        if len(faces) > 0:
+            vectors.append(faces[0].normed_embedding)
+        else:
+            results = yolo_model(img, verbose=False, imgsz=320)
+            for r in results:
+                for box in r.boxes:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    h, w, _ = img.shape
+                    px1, py1 = max(0, x1 - 30), max(0, y1 - 30)
+                    px2, py2 = min(w, x2 + 30), min(h, y2 + 30)
+                    crop = img[py1:py2, px1:px2]
+                    if crop.size > 0:
+                        fc = face_app.get(crop)
+                        if len(fc) > 0:
+                            vectors.append(fc[0].normed_embedding)
+                            break
+
+    if len(vectors) > 0:
+        mean_vector = np.mean(vectors, axis=0)
+        mean_vector = mean_vector / np.linalg.norm(mean_vector)
+        save_student(student_code, name, mean_vector)
+        refresh_student_cache()
+        return len(vectors)
+    return 0
+
+
+@app.get("/api/students/{student_code}/faces")
+async def get_student_faces(student_code: str):
+    """
+    Lấy danh sách các ảnh gương mặt hiện tại của sinh viên từ thư mục Dataset.
+    """
+    student_code = student_code.strip()
+    save_dir = os.path.join("Dataset", student_code)
+    if not os.path.exists(save_dir):
+        return JSONResponse({"success": True, "faces": [], "count": 0})
+
+    valid_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.webp')
+    files = [f for f in os.listdir(save_dir) if f.lower().endswith(valid_extensions)]
+    files.sort(key=lambda x: os.path.getmtime(os.path.join(save_dir, x)), reverse=True)
+
+    faces = [
+        {
+            "filename": f,
+            "url": f"/api/students/{student_code}/faces/{f}"
+        }
+        for f in files
+    ]
+    return JSONResponse({"success": True, "faces": faces, "count": len(faces)})
+
+
+@app.get("/api/students/{student_code}/faces/{filename}")
+async def get_student_face_file(student_code: str, filename: str):
+    """
+    Trả về file ảnh gương mặt cụ thể của sinh viên.
+    """
+    file_path = os.path.join("Dataset", student_code, filename)
+    if not os.path.exists(file_path):
+        return JSONResponse({"error": "File không tồn tại"}, status_code=404)
+    return FileResponse(file_path)
+
+
+@app.post("/api/students/{student_code}/faces")
+async def add_student_face(
+    student_code: str,
+    file: UploadFile = File(None),
+    image_data: str = Form(None)
+):
+    """
+    Thêm 1 mẫu gương mặt mới cho sinh viên đã tồn tại và tính toán lại vector CSDL.
+    """
+    try:
+        student_code = student_code.strip()
+        all_st = load_all_students()
+        if student_code not in all_st:
+            return JSONResponse({"success": False, "message": f"Sinh viên {student_code} không tồn tại trong CSDL!"}, status_code=404)
+
+        name = all_st[student_code]["name"]
+        img_np = None
+
+        if file and file.filename:
+            contents = await file.read()
+            nparr = np.frombuffer(contents, np.uint8)
+            img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        elif image_data:
+            if "," in image_data:
+                image_data = image_data.split(",")[1]
+            img_bytes = base64.b64decode(image_data)
+            nparr = np.frombuffer(img_bytes, np.uint8)
+            img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if img_np is None or img_np.size == 0:
+            return JSONResponse({"success": False, "message": "Không đọc được dữ liệu hình ảnh!"}, status_code=400)
+
+        # Kiểm tra nhận diện gương mặt
+        faces = face_app.get(img_np)
+        has_face = len(faces) > 0
+
+        if not has_face:
+            results = yolo_model(img_np, verbose=False, imgsz=320)
+            for r in results:
+                for box in r.boxes:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    h, w, _ = img_np.shape
+                    px1, py1 = max(0, x1 - 30), max(0, y1 - 30)
+                    px2, py2 = min(w, x2 + 30), min(h, y2 + 30)
+                    crop = img_np[py1:py2, px1:px2]
+                    if crop.size > 0:
+                        fc = face_app.get(crop)
+                        if len(fc) > 0:
+                            has_face = True
+                            break
+
+        if not has_face:
+            return JSONResponse({"success": False, "message": "Không tìm thấy gương mặt rõ ràng trong ảnh! Vui lòng thử ảnh khác."}, status_code=400)
+
+        save_dir = os.path.join("Dataset", student_code)
+        os.makedirs(save_dir, exist_ok=True)
+        filename = f"img_{int(time.time() * 1000)}.jpg"
+        cv2.imwrite(os.path.join(save_dir, filename), img_np)
+
+        count = recalculate_student_embedding(student_code, name)
+
+        return JSONResponse({
+            "success": True,
+            "message": f"🎉 Đã thêm gương mặt thành công cho {name}! (Tổng số: {count} ảnh)",
+            "filename": filename,
+            "count": count
+        })
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
+
+
+@app.delete("/api/students/{student_code}/faces/{filename}")
+async def delete_student_face(student_code: str, filename: str):
+    """
+    Xóa 1 mẫu gương mặt chỉ định của sinh viên và tính toán lại vector CSDL.
+    """
+    try:
+        student_code = student_code.strip()
+        file_path = os.path.join("Dataset", student_code, filename)
+
+        if not os.path.exists(file_path):
+            return JSONResponse({"success": False, "message": "File ảnh không tồn tại!"}, status_code=404)
+
+        os.remove(file_path)
+
+        all_st = load_all_students()
+        name = all_st[student_code]["name"] if student_code in all_st else student_code
+        count = recalculate_student_embedding(student_code, name)
+
+        return JSONResponse({
+            "success": True,
+            "message": f"🗑️ Đã xóa ảnh gương mặt {filename}! (Còn lại: {count} ảnh)",
+            "remaining_count": count
+        })
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
+
