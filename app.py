@@ -389,6 +389,49 @@ async def reset_attendance_api():
         return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
 
 
+@app.get("/api/attendance/export_csv")
+async def export_attendance_csv():
+    """
+    API Xuất danh sách sinh viên đã điểm danh hôm nay ra file CSV với chuẩn UTF-8 BOM (tương thích hoàn hảo với Excel hiển thị Tiếng Việt).
+    """
+    try:
+        from fastapi.responses import Response
+        import io
+        import csv
+
+        attendance = get_today_attendance()
+
+        output = io.StringIO()
+        # Ghi UTF-8 BOM để MS Excel mở file không bị lỗi phông chữ Tiếng Việt
+        output.write('\ufeff')
+        writer = csv.writer(output)
+
+        # Header bảng CSV
+        writer.writerow(["STT", "Mã số sinh viên", "Họ và tên", "Thời gian điểm danh", "Ngày điểm danh"])
+
+        today_str = time.strftime("%Y-%m-%d")
+        for idx, item in enumerate(attendance, start=1):
+            writer.writerow([
+                idx,
+                item.get("student_code", ""),
+                item.get("name", ""),
+                item.get("time", ""),
+                today_str
+            ])
+
+        csv_data = output.getvalue()
+        filename = f"DanhSachDiemDanh_{today_str}.csv"
+
+        return Response(
+            content=csv_data.encode('utf-8'),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Lỗi xuất CSV: {str(e)}"}, status_code=500)
+
+
+
 def recalculate_student_embedding(student_code: str, name: str = None):
     """
     Tính toán lại vector đặc trưng trung bình (mean embedding) chuẩn hóa cho sinh viên

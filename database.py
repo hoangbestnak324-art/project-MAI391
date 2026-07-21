@@ -8,6 +8,10 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
+    # Tối ưu hóa hiệu năng truy vấn SQLite bằng WAL mode & Synchronous NORMAL
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL;")
+    
     # Bảng lưu thông tin sinh viên và vector khuôn mặt
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS students (
@@ -26,6 +30,9 @@ def init_db():
             FOREIGN KEY (student_code) REFERENCES students (student_code)
         )
     """)
+    
+    # Tạo Index tăng tốc truy vấn điểm danh theo ngày & sinh viên
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_student_time ON attendance(student_code, timestamp);")
     
     conn.commit()
     conn.close()

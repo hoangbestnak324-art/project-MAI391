@@ -66,13 +66,18 @@
             transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
+        html,
+        body {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
             background-image:
                 radial-gradient(circle at 15% 15%, rgba(0, 102, 204, 0.08) 0%, transparent 40%),
                 radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.06) 0%, transparent 40%);
@@ -84,12 +89,11 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--panel-border);
-            padding: 1rem 2rem;
+            padding: 0.75rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
+            flex-shrink: 0;
             z-index: 100;
         }
 
@@ -184,13 +188,15 @@
         /* MAIN LAYOUT */
         main {
             display: grid;
-            grid-template-columns: 1fr 420px;
-            gap: 1.75rem;
-            padding: 1.75rem 2rem;
+            grid-template-columns: 1fr 400px;
+            gap: 1.25rem;
+            padding: 1.25rem 2rem;
             flex: 1;
+            min-height: 0;
             max-width: 1700px;
             margin: 0 auto;
             width: 100%;
+            overflow: hidden;
         }
 
         /* VIDEO PANEL */
@@ -205,10 +211,12 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            height: 100%;
+            min-height: 0;
         }
 
         .video-header {
-            padding: 1.1rem 1.5rem;
+            padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--panel-border);
             display: flex;
             justify-content: space-between;
@@ -244,18 +252,17 @@
         .video-wrapper {
             position: relative;
             flex: 1;
+            min-height: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             background: var(--video-bg);
-            min-height: 480px;
+            overflow: hidden;
         }
 
         .video-feed {
             width: 100%;
-            height: auto;
-            max-height: 72vh;
-            aspect-ratio: 16/9;
+            height: 100%;
             object-fit: cover;
             display: block;
         }
@@ -282,8 +289,9 @@
             flex-direction: column;
             overflow: hidden;
             box-shadow: 0 20px 40px var(--shadow-color);
-            height: calc(100vh - 120px);
-            max-height: 820px;
+            height: 100%;
+            min-height: 0;
+            position: relative;
         }
 
         .panel-header {
@@ -320,37 +328,135 @@
             white-space: nowrap;
         }
 
+        /* FLOATING GLASSMORPHIC SEARCH BAR */
         .search-box {
-            padding: 0.85rem 1.25rem;
-            border-bottom: 1px solid var(--panel-border);
-            background: var(--panel-card);
+            padding: 0.6rem 1rem;
+            margin: 0.85rem 1.1rem 0.35rem 1.1rem;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 8px 24px var(--shadow-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 10;
+        }
+
+        :root[data-theme="light"] .search-box {
+            background: rgba(255, 255, 255, 0.65);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .search-box:focus-within {
+            transform: translateY(-2px);
+            border-color: var(--primary-on-dark);
+            box-shadow: 0 12px 28px rgba(0, 102, 204, 0.25);
+            background: rgba(255, 255, 255, 0.09);
+        }
+
+        :root[data-theme="light"] .search-box:focus-within {
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .search-input {
             width: 100%;
-            background: var(--panel-card);
-            border: 1px solid var(--panel-border);
-            border-radius: var(--radius-sm);
-            padding: 0.55rem 0.85rem;
+            background: transparent;
+            border: none;
+            padding: 0.25rem 0.5rem 0.25rem 0.5rem;
             color: var(--text-primary);
-            font-size: 0.85rem;
+            font-size: 0.88rem;
+            font-weight: 500;
             outline: none;
         }
 
+        .search-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
         .search-input:focus {
-            border-color: var(--primary-on-dark);
-            box-shadow: 0 0 0 2px rgba(41, 151, 255, 0.2);
+            border: none;
+            box-shadow: none;
+        }
+
+        /* FLOATING ACTIONS CONTAINER (RESET & EXPORT CSV) */
+        .floating-panel-actions {
+            position: absolute;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            z-index: 20;
+        }
+
+        .btn-reset-floating {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.95));
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.55rem 0.95rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-reset-floating:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 12px 25px rgba(239, 68, 68, 0.5);
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.95), rgba(185, 28, 28, 1));
+        }
+
+        .btn-reset-floating:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn-export-csv-floating {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.55rem 1.05rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-export-csv-floating:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 12px 25px rgba(16, 185, 129, 0.55);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .btn-export-csv-floating:active {
+            transform: translateY(0) scale(0.98);
         }
 
         .attendance-list {
             list-style: none;
             overflow-y: auto;
             flex: 1;
-            padding: 1rem 1.25rem;
+            min-height: 0;
+            padding: 1rem 1.25rem 4.25rem 1.25rem;
         }
 
         .attendance-list::-webkit-scrollbar {
-            width: 5px;
+            width: 6px;
         }
 
         .attendance-list::-webkit-scrollbar-track {
@@ -358,8 +464,12 @@
         }
 
         .attendance-list::-webkit-scrollbar-thumb {
-            background: rgba(128, 128, 128, 0.2);
+            background: rgba(148, 163, 184, 0.3);
             border-radius: 10px;
+        }
+
+        .attendance-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
         }
 
         .attendance-item {
@@ -372,6 +482,8 @@
             align-items: center;
             gap: 1rem;
             animation: slideIn 0.35s ease-out forwards;
+            will-change: transform, opacity;
+            contain: layout style;
         }
 
         .attendance-item:hover {
@@ -411,15 +523,40 @@
         .student-info {
             flex: 1;
             min-width: 0;
+            overflow: hidden;
+        }
+
+        .student-name-box {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            margin-bottom: 0.2rem;
         }
 
         .student-name {
             font-weight: 600;
             font-size: 0.95rem;
-            margin-bottom: 0.25rem;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            display: inline-block;
+            will-change: transform;
+        }
+
+        .student-name.scroll-marquee {
+            animation: marqueeScroll 3s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+        }
+
+        @keyframes marqueeScroll {
+
+            0%,
+            20% {
+                transform: translateX(0);
+            }
+
+            80%,
+            100% {
+                transform: translateX(var(--scroll-dist, -50px));
+            }
         }
 
         .student-code {
@@ -741,14 +878,69 @@
 
         .snap-preview-box {
             background: var(--video-bg);
-            border: 1px dashed var(--panel-border);
+            border: 1px solid var(--panel-border);
             border-radius: var(--radius-md);
             min-height: 160px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            margin-bottom: 0.6rem;
+            position: relative;
+        }
+
+        /* FLOATING CIRCULAR CAMERA SHUTTER BUTTON */
+        .circular-shutter-btn {
+            position: absolute;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 3px solid #ffffff;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 15;
+            outline: none;
+            padding: 0;
+        }
+
+        .circular-shutter-btn::after {
+            content: '';
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .circular-shutter-btn:hover {
+            transform: translateX(-50%) scale(1.08);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .circular-shutter-btn:active {
+            transform: translateX(-50%) scale(0.92);
+        }
+
+        .circular-shutter-btn.is-captured::after {
+            background: #06b6d4;
+            transform: scale(0.85);
+        }
+
+        .circular-shutter-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: translateX(-50%);
+            pointer-events: none;
         }
 
         .snap-placeholder {
@@ -1170,15 +1362,10 @@
         <section class="video-container">
             <div class="video-header">
                 <div class="video-header-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-on-dark)"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M23 7l-7 5 7 5V7z"></path>
-                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                    </svg>
                     <h2>Hệ thống điểm danh</h2>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.6rem;">
-                    <label class="ios-toggle-wrapper" title="Tắt / Bật Camera Live">
+                    <label class="ios-toggle-wrapper" title="tắt / bật Camera">
                         <span class="ios-toggle-title">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1212,9 +1399,9 @@
                         <path d="M3 5.5v11.5a2 2 0 0 0 2 2h11.5"></path>
                     </svg>
                     <h3 style="font-size:1.15rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-primary);">
-                        Camera Đã Tắt</h3>
-                    <p style="font-size:0.85rem;">Bấm nút "Bật Camera" ở phía trên để mở lại nhận diện khuôn mặt
-                        real-time.</p>
+                        Camera đang tắt</h3>
+                    <p style="font-size:0.85rem;">Bấm nút công tắc "Camera" ở phía trên để bật nhận diện khuôn mặt và
+                        điểm danh</p>
                 </div>
             </div>
 
@@ -1231,15 +1418,6 @@
 
                 </div>
                 <div style="display:flex; align-items:center; gap:0.6rem;">
-                    <button class="btn-reset-attendance" onclick="resetAttendanceAction()"
-                        title="Reset danh sách điểm danh hôm nay">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                            <path d="M3 3v5h5"></path>
-                        </svg>
-                        <span>Reset</span>
-                    </button>
                     <div class="count-chip" id="total-count">
                         {{ attendance|length if attendance else 0 }} sinh viên
                     </div>
@@ -1263,9 +1441,11 @@
                 {% if attendance %}
                 {% for p in attendance %}
                 <li class="attendance-item" data-code="{{ p.student_code }}" data-name="{{ p.name }}">
-                    <div class="avatar">{{ p.name[0].upper() if p.name else '?' }}</div>
+                    <div class="avatar">{{ (p.name.strip().split()[-1][0].upper()) if p.name else '?' }}</div>
                     <div class="student-info">
-                        <div class="student-name">{{ p.name }}</div>
+                        <div class="student-name-box">
+                            <div class="student-name" title="{{ p.name }}">{{ p.name }}</div>
+                        </div>
                         <span class="student-code">{{ p.student_code }}</span>
                     </div>
                     <div class="time-badge">{{ p.time }}</div>
@@ -1284,6 +1464,29 @@
                 </div>
                 {% endif %}
             </ul>
+
+            <!-- FLOATING ACTIONS CONTAINER (RESET & EXPORT CSV) -->
+            <div class="floating-panel-actions">
+                <button class="btn-reset-floating" onclick="resetAttendanceAction()"
+                    title="Reset danh sách điểm danh hôm nay">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                        <path d="M3 3v5h5"></path>
+                    </svg>
+                    <span>Reset</span>
+                </button>
+                <button class="btn-export-csv-floating" onclick="exportAttendanceCSV()"
+                    title="Xuất danh sách điểm danh hôm nay ra file CSV">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Xuất CSV</span>
+                </button>
+            </div>
         </section>
     </main>
 
@@ -1292,25 +1495,27 @@
 
     <!-- REGISTER STUDENT MODAL OVERLAY -->
     <div class="modal-overlay" id="register-modal">
-        <div class="modal-card">
+        <div class="modal-card" style="max-width: 480px;">
             <div class="modal-header">
                 <h3>Đăng ký sinh viên mới</h3>
                 <button class="close-btn" onclick="closeRegisterModal()">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="padding: 1.15rem 1.4rem; gap: 0.75rem; overflow: visible; max-height: none;">
                 <div id="register-alert" class="alert-box" style="display:none;"></div>
 
-                <div class="form-group">
+                <div class="form-group" style="gap: 0.3rem;">
                     <label>Mã số sinh viên (MSSV)</label>
-                    <input type="text" id="reg-student-code" placeholder="Ví dụ: SE..." required>
+                    <input type="text" id="reg-student-code" placeholder="Ví dụ: SE..." required
+                        style="padding: 0.5rem 0.75rem;">
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="gap: 0.3rem;">
                     <label>Họ và Tên</label>
-                    <input type="text" id="reg-name" placeholder="Ví dụ: Nguyễn Văn Mười..." required>
+                    <input type="text" id="reg-name" placeholder="Ví dụ: Nguyễn Văn Mười..." required
+                        style="padding: 0.5rem 0.75rem;">
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="gap: 0.3rem;">
                     <label>Hình ảnh khuôn mặt</label>
                     <div class="image-source-tabs">
                         <button type="button" class="tab-btn active" id="tab-snap" onclick="switchImageTab('snap')">
@@ -1336,30 +1541,38 @@
 
                 <!-- SNAP SECTION -->
                 <div id="section-snap" class="source-section">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Xem
+                            trước:</span>
+                        <div class="ios-toggle-wrapper" style="transform: scale(0.8); transform-origin: right center;">
+                            <span class="ios-toggle-label" id="reg-cam-status-label" style="font-size: 0.75rem;">Camera
+                                bật</span>
+                            <label class="ios-switch">
+                                <input type="checkbox" id="reg-cam-toggle" checked
+                                    onchange="toggleRegCameraModal(this.checked)">
+                                <span class="ios-slider"></span>
+                            </label>
+                        </div>
+                    </div>
                     <div class="snap-preview-box"
-                        style="position: relative; background: var(--video-bg); border-radius: 12px; overflow: hidden; min-height: 240px; display: flex; align-items: center; justify-content: center;">
+                        style="position: relative; background: var(--video-bg); border-radius: 12px; overflow: hidden; height: 210px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">
                         <!-- Canvas Mirror for Live Stream & Snapshot -->
                         <canvas id="snap-canvas" width="640" height="480"
-                            style="display:block; width:100%; height:240px; object-fit:cover; border-radius:12px;"></canvas>
+                            style="display:block; width:100%; height:210px; object-fit:cover; border-radius:12px;"></canvas>
 
                         <!-- Status Badge Overlay -->
                         <div id="snap-badge"
                             style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: var(--accent-cyan); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
                             <span id="snap-badge-dot"
                                 style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;"></span>
-                            <span id="snap-badge-text">Camera Trực Tiếp</span>
+                            <span id="snap-badge-text">Camera bật</span>
                         </div>
+
+                        <!-- FLOATING CIRCULAR SHUTTER BUTTON -->
+                        <button type="button" class="circular-shutter-btn" id="btn-snap-toggle"
+                            onclick="handleSnapToggle()" title="Bấm để chụp ảnh snapshot"></button>
                     </div>
-                    <button type="button" class="btn-snap-action" id="btn-snap-toggle" onclick="handleSnapToggle()"
-                        style="margin-top: 0.75rem;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
-                            </path>
-                            <circle cx="12" cy="13" r="4"></circle>
-                        </svg>
-                        <span>Chụp ảnh ngay</span>
-                    </button>
                 </div>
 
                 <!-- UPLOAD SECTION -->
@@ -1419,7 +1632,7 @@
         <div class="modal-card" style="max-width: 650px;">
             <div class="modal-header">
                 <div>
-                    <h3 id="faces-modal-title" style="margin:0;">Quản lý gương mặt</h3>
+                    <h3 id="faces-modal-title" style="margin:0;">Quản lý khuôn mặt</h3>
                     <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;"
                         id="faces-modal-subtitle">Sinh viên</div>
                 </div>
@@ -1442,7 +1655,7 @@
                 <!-- ADD NEW FACE SECTION -->
                 <div style="border-top:1px solid var(--panel-border); padding-top:1rem;">
                     <span style="font-weight:600; font-size:0.9rem; display:block; margin-bottom:0.75rem;">Thêm mẫu
-                        gương mặt mới</span>
+                        khuôn mặt mới</span>
 
                     <div class="source-tabs">
                         <button class="tab-btn active" id="tab-face-snap" onclick="switchFaceTab('snap')">
@@ -1467,24 +1680,37 @@
                     </div>
 
                     <!-- SNAP SECTION -->
-                    <div id="section-face-snap" class="source-section active">
-                        <div class="snap-box">
-                            <canvas id="face-snap-canvas" class="snap-canvas" width="640" height="480"></canvas>
-                            <div class="snap-badge">
-                                <span class="status-dot" id="face-snap-badge-dot"></span>
-                                <span id="face-snap-badge-text">Camera trực tiếp</span>
+                    <div id="section-face-snap" class="source-section active" style="margin-top: 0.6rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Trạng thái
+                                Camera Preview</span>
+                            <div class="ios-toggle-wrapper"
+                                style="transform: scale(0.8); transform-origin: right center;">
+                                <span class="ios-toggle-label" id="face-cam-status-label"
+                                    style="font-size: 0.75rem;">Camera bật</span>
+                                <label class="ios-switch">
+                                    <input type="checkbox" id="face-cam-toggle" checked
+                                        onchange="toggleFaceCameraModal(this.checked)">
+                                    <span class="ios-slider"></span>
+                                </label>
                             </div>
                         </div>
-                        <button class="btn-snap-toggle" id="btn-face-snap-toggle" onclick="toggleFaceSnap()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
-                                </path>
-                                <circle cx="12" cy="13" r="4"></circle>
-                            </svg>
-                            <span>Chụp ảnh ngay</span>
-                        </button>
+                        <div class="snap-box"
+                            style="position: relative; background: var(--video-bg); border-radius: 12px; overflow: hidden; height: 210px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">
+                            <canvas id="face-snap-canvas" class="snap-canvas" width="640" height="480"
+                                style="display:block; width:100%; height:210px; object-fit:cover; border-radius:12px;"></canvas>
+                            <div class="snap-badge"
+                                style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: var(--accent-cyan); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
+                                <span class="status-dot" id="face-snap-badge-dot"
+                                    style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;"></span>
+                                <span id="face-snap-badge-text">Camera trực tiếp</span>
+                            </div>
+
+                            <!-- FLOATING CIRCULAR SHUTTER BUTTON -->
+                            <button type="button" class="circular-shutter-btn" id="btn-face-snap-toggle"
+                                onclick="toggleFaceSnap()" title="Bấm để chụp ảnh snapshot"></button>
+                        </div>
                     </div>
 
                     <!-- UPLOAD SECTION -->
@@ -1496,7 +1722,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeFacesModal()">Đóng</button>
-                <button class="btn-submit" id="btn-submit-add-face" onclick="submitAddFace()">Thêm gương mặt & Đồng
+                <button class="btn-submit" id="btn-submit-add-face" onclick="submitAddFace()">Thêm khuôn mặt & Đồng
                     bộ</button>
             </div>
         </div>
@@ -1520,15 +1746,8 @@
             const ctx = canvas.getContext('2d');
 
             if (btnToggle) {
-                btnToggle.innerHTML = `
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                        <circle cx="12" cy="13" r="4"></circle>
-                    </svg>
-                    <span>Chụp ảnh ngay</span>
-                `;
-                btnToggle.style.background = 'rgba(6, 182, 212, 0.15)';
-                btnToggle.style.color = 'var(--accent-cyan)';
+                btnToggle.classList.remove('is-captured');
+                btnToggle.title = 'Bấm để chụp ảnh snapshot';
             }
             if (badgeText) badgeText.textContent = 'Camera trực tiếp';
             if (badgeDot) badgeDot.style.background = 'var(--success)';
@@ -1549,12 +1768,57 @@
             }
         }
 
+        function toggleRegCameraModal(checked) {
+            setGlobalCameraState(checked);
+        }
+
+        function syncRegCameraUI() {
+            const regToggle = document.getElementById('reg-cam-toggle');
+            const statusLabel = document.getElementById('reg-cam-status-label');
+            const badgeText = document.getElementById('snap-badge-text');
+            const badgeDot = document.getElementById('snap-badge-dot');
+            const canvas = document.getElementById('snap-canvas');
+            const btnSnap = document.getElementById('btn-snap-toggle');
+
+            if (regToggle) regToggle.checked = isCameraOn;
+
+            if (isCameraOn) {
+                if (statusLabel) statusLabel.textContent = 'Camera bật';
+                if (badgeText) badgeText.textContent = 'Camera đang bật';
+                if (badgeDot) badgeDot.style.background = 'var(--success)';
+                if (btnSnap) btnSnap.disabled = false;
+
+                const regModal = document.getElementById('register-modal');
+                const tabSnap = document.getElementById('tab-snap');
+                if (regModal && regModal.classList.contains('active') && tabSnap && tabSnap.classList.contains('active')) {
+                    if (!capturedBase64) startModalLiveMirror();
+                }
+            } else {
+                if (statusLabel) statusLabel.textContent = 'Camera tắt';
+                if (badgeText) badgeText.textContent = 'Camera đang tắt';
+                if (badgeDot) badgeDot.style.background = '#ef4444';
+                if (btnSnap) btnSnap.disabled = true;
+
+                stopModalLiveMirror();
+
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '15px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('📷 Camera đang tắt', canvas.width / 2, canvas.height / 2);
+                }
+            }
+        }
+
         function openRegisterModal() {
             document.getElementById('register-modal').classList.add('active');
             document.getElementById('register-alert').style.display = 'none';
             capturedBase64 = null;
             switchImageTab('snap');
-            startModalLiveMirror();
+            syncRegCameraUI();
         }
 
         function closeRegisterModal() {
@@ -1570,7 +1834,7 @@
             document.getElementById('section-upload').style.display = (tab === 'upload') ? 'block' : 'none';
 
             if (tab === 'snap') {
-                if (!capturedBase64) startModalLiveMirror();
+                syncRegCameraUI();
             } else {
                 stopModalLiveMirror();
             }
@@ -1603,18 +1867,11 @@
             }
 
             if (btnToggle) {
-                btnToggle.innerHTML = `
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.5 2v6h-6"></path>
-                        <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                    </svg>
-                    <span>Chụp lại</span>
-                `;
-                btnToggle.style.background = 'rgba(234, 179, 8, 0.15)';
-                btnToggle.style.color = 'var(--warning)';
+                btnToggle.classList.add('is-captured');
+                btnToggle.title = 'Bấm để chụp lại';
             }
             if (badgeText) badgeText.textContent = 'Ảnh đã chụp';
-            if (badgeDot) badgeDot.style.background = 'var(--warning)';
+            if (badgeDot) badgeDot.style.background = 'var(--accent-cyan)';
         }
 
         async function submitRegistration() {
@@ -1883,6 +2140,10 @@
             `;
         }
 
+        function exportAttendanceCSV() {
+            window.location.href = '/api/attendance/export_csv';
+        }
+
         async function resetAttendanceAction() {
             if (!confirm("Bạn có muốn reset toàn bộ danh sách điểm danh của phiên này?")) return;
 
@@ -1897,6 +2158,13 @@
             } catch (err) {
                 alert("❌ Lỗi kết nối: " + err.message);
             }
+        }
+
+        function getFirstNameInitial(name) {
+            if (!name || typeof name !== 'string') return '?';
+            const parts = name.trim().split(/\s+/);
+            const firstName = parts[parts.length - 1];
+            return firstName ? firstName.charAt(0).toUpperCase() : '?';
         }
 
         function addAttendanceItem(data) {
@@ -1923,7 +2191,7 @@
             document.getElementById('total-count').textContent = `${attendanceCount} Sinh viên`;
 
             const timeString = data.time || new Date().toLocaleTimeString('vi-VN', { hour12: false });
-            const initial = data.name ? data.name.charAt(0).toUpperCase() : '?';
+            const initial = getFirstNameInitial(data.name);
 
             const li = document.createElement('li');
             li.className = 'attendance-item';
@@ -1932,14 +2200,36 @@
             li.innerHTML = `
                 <div class="avatar">${initial}</div>
                 <div class="student-info">
-                    <div class="student-name">${data.name}</div>
+                    <div class="student-name-box">
+                        <div class="student-name" title="${data.name}">${data.name}</div>
+                    </div>
                     <span class="student-code">${data.student_code}</span>
                 </div>
                 <div class="time-badge">${timeString}</div>
             `;
 
             list.insertBefore(li, list.firstChild);
+            setTimeout(checkAndApplyNameMarquee, 50);
         }
+
+        function checkAndApplyNameMarquee() {
+            document.querySelectorAll('.student-name').forEach(el => {
+                if (el.parentElement && el.parentElement.classList.contains('student-name-box')) {
+                    const parentWidth = el.parentElement.clientWidth;
+                    const textWidth = el.scrollWidth;
+                    if (textWidth > parentWidth + 4) {
+                        const distance = -(textWidth - parentWidth + 12);
+                        el.style.setProperty('--scroll-dist', `${distance}px`);
+                        el.classList.add('scroll-marquee');
+                    } else {
+                        el.classList.remove('scroll-marquee');
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', checkAndApplyNameMarquee);
+        window.addEventListener('resize', checkAndApplyNameMarquee);
 
         // Filter Attendance
         function filterAttendance() {
@@ -2002,7 +2292,7 @@
             listContainer.innerHTML = filtered.map(s => `
                 <div class="student-manage-card" id="student-card-${s.student_code}">
                     <div style="display:flex; align-items:center; gap:0.75rem; flex:1;">
-                        <div class="avatar">${s.name ? s.name.charAt(0).toUpperCase() : '?'}</div>
+                        <div class="avatar">${getFirstNameInitial(s.name)}</div>
                         <div class="student-info-box" id="info-box-${s.student_code}">
                             <div class="student-name" style="font-weight:600;">${s.name}</div>
                             <span class="student-code" style="font-size:0.8rem; opacity:0.8;">MSSV: ${s.student_code}</span>
@@ -2014,7 +2304,7 @@
                                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                                 <circle cx="12" cy="13" r="4"></circle>
                             </svg>
-                            <span>Gương mặt</span>
+                            <span>Cập nhật ảnh</span>
                         </button>
                         <button class="btn-action-edit" onclick="enableEditStudent('${s.student_code}', '${s.name.replace(/'/g, "\\'")}')">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2119,32 +2409,46 @@
 
         let isCameraOn = true;
 
-        function toggleMainCamera(checked) {
-            const feedImg = document.getElementById('main-video-feed');
-            const placeholder = document.getElementById('video-off-placeholder');
-            const statusSpan = document.getElementById('video-footer-status');
-            const toggleInput = document.getElementById('btn-toggle-cam');
-
+        function setGlobalCameraState(checked) {
             if (typeof checked === 'boolean') {
                 isCameraOn = checked;
             } else {
                 isCameraOn = !isCameraOn;
-                if (toggleInput) toggleInput.checked = isCameraOn;
             }
+
+            // Sync all switch inputs across UI
+            const mainToggle = document.getElementById('btn-toggle-cam');
+            const regToggle = document.getElementById('reg-cam-toggle');
+            const faceToggle = document.getElementById('face-cam-toggle');
+
+            if (mainToggle) mainToggle.checked = isCameraOn;
+            if (regToggle) regToggle.checked = isCameraOn;
+            if (faceToggle) faceToggle.checked = isCameraOn;
+
+            // 1. Sync Main Camera Feed
+            const feedImg = document.getElementById('main-video-feed');
+            const placeholder = document.getElementById('video-off-placeholder');
+            const statusSpan = document.getElementById('video-footer-status');
 
             if (isCameraOn) {
-                feedImg.src = "/video_feed";
-                feedImg.style.display = 'block';
-                placeholder.style.display = 'none';
-
-                if (statusSpan) statusSpan.textContent = 'Trạng thái: Đang điểm danh';
+                if (feedImg) { feedImg.src = "/video_feed"; feedImg.style.display = 'block'; }
+                if (placeholder) placeholder.style.display = 'none';
+                if (statusSpan) statusSpan.textContent = 'Trạng thái: Real-time Face Recognition Active';
             } else {
-                feedImg.src = "";
-                feedImg.style.display = 'none';
-                placeholder.style.display = 'block';
-
-                if (statusSpan) statusSpan.textContent = 'Trạng thái: Camera Đang Tắt';
+                if (feedImg) { feedImg.src = ""; feedImg.style.display = 'none'; }
+                if (placeholder) placeholder.style.display = 'block';
+                if (statusSpan) statusSpan.textContent = 'Trạng thái: Camera đang tắt';
             }
+
+            // 2. Sync Register Modal Camera UI
+            syncRegCameraUI();
+
+            // 3. Sync Manage Faces Modal Camera UI
+            syncFaceCameraUI();
+        }
+
+        function toggleMainCamera(checked) {
+            setGlobalCameraState(checked);
         }
 
         // ==========================================
@@ -2167,15 +2471,8 @@
             const ctx = canvas.getContext('2d');
 
             if (btnToggle) {
-                btnToggle.innerHTML = `
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                        <circle cx="12" cy="13" r="4"></circle>
-                    </svg>
-                    <span>Chụp ảnh ngay</span>
-                `;
-                btnToggle.style.background = 'rgba(6, 182, 212, 0.15)';
-                btnToggle.style.color = 'var(--accent-cyan)';
+                btnToggle.classList.remove('is-captured');
+                btnToggle.title = 'Bấm để chụp ảnh snapshot';
             }
             if (badgeText) badgeText.textContent = 'Camera trực tiếp';
             if (badgeDot) badgeDot.style.background = 'var(--success)';
@@ -2208,19 +2505,57 @@
                 if (badgeText) badgeText.textContent = 'Đã chụp snapshot!';
                 if (badgeDot) badgeDot.style.background = 'var(--accent-cyan)';
                 if (btnToggle) {
-                    btnToggle.innerHTML = `
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                        </svg>
-                        <span>Chụp lại</span>
-                    `;
-                    btnToggle.style.background = 'rgba(16, 185, 129, 0.15)';
-                    btnToggle.style.color = 'var(--success)';
+                    btnToggle.classList.add('is-captured');
+                    btnToggle.title = 'Bấm để chụp lại';
                 }
             } else {
                 faceCapturedBase64 = null;
                 startFaceLiveMirror();
+            }
+        }
+
+        function toggleFaceCameraModal(checked) {
+            setGlobalCameraState(checked);
+        }
+
+        function syncFaceCameraUI() {
+            const faceToggle = document.getElementById('face-cam-toggle');
+            const statusLabel = document.getElementById('face-cam-status-label');
+            const badgeText = document.getElementById('face-snap-badge-text');
+            const badgeDot = document.getElementById('face-snap-badge-dot');
+            const canvas = document.getElementById('face-snap-canvas');
+            const btnFaceSnap = document.getElementById('btn-face-snap-toggle');
+
+            if (faceToggle) faceToggle.checked = isCameraOn;
+
+            if (isCameraOn) {
+                if (statusLabel) statusLabel.textContent = 'Camera bật';
+                if (badgeText) badgeText.textContent = 'Camera trực tiếp';
+                if (badgeDot) badgeDot.style.background = 'var(--success)';
+                if (btnFaceSnap) btnFaceSnap.disabled = false;
+
+                const facesModal = document.getElementById('faces-modal');
+                const tabFaceSnap = document.getElementById('tab-face-snap');
+                if (facesModal && facesModal.classList.contains('active') && tabFaceSnap && tabFaceSnap.classList.contains('active')) {
+                    if (!faceCapturedBase64) startFaceLiveMirror();
+                }
+            } else {
+                if (statusLabel) statusLabel.textContent = 'Camera tắt';
+                if (badgeText) badgeText.textContent = 'Camera đang tắt';
+                if (badgeDot) badgeDot.style.background = '#ef4444';
+                if (btnFaceSnap) btnFaceSnap.disabled = true;
+
+                stopFaceLiveMirror();
+
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '15px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('📷 Camera đang tắt', canvas.width / 2, canvas.height / 2);
+                }
             }
         }
 
@@ -2235,7 +2570,7 @@
                 tabUpload.classList.remove('active');
                 secSnap.style.display = 'block';
                 secUpload.style.display = 'none';
-                startFaceLiveMirror();
+                syncFaceCameraUI();
             } else {
                 tabUpload.classList.add('active');
                 tabSnap.classList.remove('active');
@@ -2248,7 +2583,7 @@
         async function openFacesModal(code, name) {
             currentFaceStudentCode = code;
             currentFaceStudentName = name;
-            document.getElementById('faces-modal-title').textContent = `Quản lý gương mặt - ${name}`;
+            document.getElementById('faces-modal-title').textContent = `Quản lý khuôn mặt - ${name}`;
             document.getElementById('faces-modal-subtitle').textContent = `MSSV: ${code}`;
             document.getElementById('faces-alert').style.display = 'none';
             document.getElementById('faces-modal').classList.add('active');
@@ -2280,7 +2615,7 @@
                     chip.textContent = `${faces.length} ảnh`;
 
                     if (faces.length === 0) {
-                        container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.85rem;">Chưa có mẫu ảnh gương mặt nào cho sinh viên này.</div>`;
+                        container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.85rem;">Chưa có mẫu ảnh khuôn mặt nào cho sinh viên này.</div>`;
                         return;
                     }
 
@@ -2345,7 +2680,7 @@
             if (isSnapTab) {
                 if (!faceCapturedBase64) {
                     alertBox.className = 'alert-box error';
-                    alertBox.textContent = '❌ Vui lòng bấm nút "Chụp ảnh ngay" trước khi bấm Thêm!';
+                    alertBox.textContent = '❌ Vui lòng bấm nút "Chụp ngay" trước khi bấm Thêm';
                     alertBox.style.display = 'block';
                     return;
                 }
@@ -2392,7 +2727,7 @@
                 alertBox.style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Thêm gương mặt & Đồng bộ';
+                submitBtn.innerHTML = 'Thêm khuôn mặt & đồng bộ';
             }
         }
 
