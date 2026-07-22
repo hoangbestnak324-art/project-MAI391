@@ -14,18 +14,17 @@ from insightface.app import FaceAnalysis
 
 from database import init_db, load_all_students, save_student, log_attendance, get_today_attendance
 
-# Initialize database
 init_db()
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 # Load Models
-print("🔄 Loading AI Models...")
+print("Loading AI Models ...")
 yolo_model = YOLO('yolov8n-face.pt')
 face_app = FaceAnalysis(name='buffalo_sc', providers=['CPUExecutionProvider'])
 face_app.prepare(ctx_id=0, det_size=(640, 640))
-print("✅ Models loaded!")
+print("Models loaded")
 
 # Cache known students as NumPy matrix for fast vectorized cosine similarity
 known_students = {}
@@ -72,7 +71,7 @@ manager = ConnectionManager()
 
 def process_attendance_event(identity_code: str, identity_name: str):
     """
-    Ghi nhận điểm danh và phát tín hiệu WebSocket tức thì về giao diện web.
+    Ghi nhận điểm danh và phát tín hiệu WebSocket tức thì về giao diện web
     """
     now = time.time()
     last_time = last_notification_time.get(identity_code, 0)
@@ -234,14 +233,14 @@ async def register_student(
     image_data: str = Form(None)
 ):
     """
-    API đăng ký khuôn mặt mới cho sinh viên.
+    API đăng ký khuôn mặt mới cho sinh viên
     """
     try:
         student_code = student_code.strip()
         name = name.strip()
 
         if not student_code or not name:
-            return JSONResponse({"success": False, "message": "Vui lòng nhập đầy đủ Mã sinh viên và Họ tên!"}, status_code=400)
+            return JSONResponse({"success": False, "message": "Vui lòng nhập đầy đủ Mã số sinh viên và Họ tên"}, status_code=400)
 
         img_np = None
 
@@ -259,7 +258,7 @@ async def register_student(
             img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if img_np is None or img_np.size == 0:
-            return JSONResponse({"success": False, "message": "Không đọc được dữ liệu hình ảnh!"}, status_code=400)
+            return JSONResponse({"success": False, "message": "Không đọc được dữ liệu hình ảnh"}, status_code=400)
 
         # 3. Trích xuất vector 512D bằng InsightFace
         faces = face_app.get(img_np)
@@ -297,7 +296,7 @@ async def register_student(
 
         return JSONResponse({
             "success": True,
-            "message": f"🎉 Đã đăng ký thành công cho sinh viên: {name} ({student_code})!"
+            "message": f"Đã đăng ký thành công cho sinh viên: {name} ({student_code})"
         })
 
     except Exception as e:
@@ -306,7 +305,7 @@ async def register_student(
 @app.get("/api/students")
 async def get_students_api():
     """
-    Lấy danh sách tất cả sinh viên đã đăng ký trong hệ thống.
+    Lấy danh sách tất cả sinh viên đã đăng ký trong hệ thống
     """
     students_dict = load_all_students()
     result = []
@@ -328,7 +327,7 @@ async def update_student_api(old_code: str, request: Request):
         new_name = body.get("name", "").strip()
 
         if not new_code or not new_name:
-            return JSONResponse({"success": False, "message": "Thông tin không được để trống!"}, status_code=400)
+            return JSONResponse({"success": False, "message": "Thông tin không được để trống"}, status_code=400)
 
         from database import update_student
         update_student(old_code, new_code, new_name)
@@ -342,7 +341,7 @@ async def update_student_api(old_code: str, request: Request):
             os.rename(old_dir, new_dir)
 
         refresh_student_cache()
-        return JSONResponse({"success": True, "message": f"Đã cập nhật sinh viên {new_name} ({new_code}) thành công!"})
+        return JSONResponse({"success": True, "message": f"Đã cập nhật sinh viên {new_name} ({new_code}) thành công"})
     except Exception as e:
         return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
 
@@ -361,7 +360,7 @@ async def delete_student_api(student_code: str):
             shutil.rmtree(dataset_dir)
 
         refresh_student_cache()
-        return JSONResponse({"success": True, "message": f"Đã xóa thành công sinh viên {student_code}!"})
+        return JSONResponse({"success": True, "message": f"Đã xóa thành công sinh viên {student_code}"})
     except Exception as e:
         return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
 
@@ -383,7 +382,7 @@ async def reset_attendance_api():
 
         return JSONResponse({
             "success": True,
-            "message": f"🧹 Đã reset danh sách điểm danh hôm nay ({deleted_count} sinh viên)!"
+            "message": f"Đã reset danh sách điểm danh hôm nay ({deleted_count} sinh viên)"
         })
     except Exception as e:
         return JSONResponse({"success": False, "message": f"Lỗi: {str(e)}"}, status_code=500)
@@ -392,7 +391,7 @@ async def reset_attendance_api():
 @app.get("/api/attendance/export_csv")
 async def export_attendance_csv():
     """
-    API Xuất danh sách sinh viên đã điểm danh hôm nay ra file CSV với chuẩn UTF-8 BOM (tương thích hoàn hảo với Excel hiển thị Tiếng Việt).
+    API Xuất danh sách sinh viên đã điểm danh hôm nay ra file CSV với chuẩn UTF-8 BOM
     """
     try:
         from fastapi.responses import Response
@@ -527,7 +526,7 @@ async def add_student_face(
     image_data: str = Form(None)
 ):
     """
-    Thêm 1 mẫu gương mặt mới cho sinh viên đã tồn tại và tính toán lại vector CSDL.
+    Thêm 1 mẫu gương mặt mới cho sinh viên đã tồn tại và cập nhật lại các vector trên CSDL.
     """
     try:
         student_code = student_code.strip()
@@ -583,7 +582,7 @@ async def add_student_face(
 
         return JSONResponse({
             "success": True,
-            "message": f"🎉 Đã thêm gương mặt thành công cho {name}! (Tổng số: {count} ảnh)",
+            "message": f"Đã thêm gương mặt thành công cho {name}! (Tổng số: {count} ảnh)",
             "filename": filename,
             "count": count
         })
@@ -611,7 +610,7 @@ async def delete_student_face(student_code: str, filename: str):
 
         return JSONResponse({
             "success": True,
-            "message": f"🗑️ Đã xóa ảnh gương mặt {filename}! (Còn lại: {count} ảnh)",
+            "message": f"Đã xóa ảnh gương mặt {filename}! (Còn lại: {count} ảnh)",
             "remaining_count": count
         })
     except Exception as e:
