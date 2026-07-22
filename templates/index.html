@@ -1320,7 +1320,7 @@
                         <path d="M21 15.5V7a2 2 0 0 0-2-2H7.5"></path>
                         <path d="M3 5.5v11.5a2 2 0 0 0 2 2h11.5"></path>
                     </svg>
-                    <h3 style="font-size:1.15rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-primary);">
+                    <h3 style="font-size:1.15rem; font-weight:600; margin-bottom:0.4rem; color:white;">
                         Camera đang tắt</h3>
                     <p style="font-size:0.85rem;">Bấm nút công tắc "Camera" ở phía trên để bật nhận diện khuôn mặt và
                         điểm danh</p>
@@ -1469,7 +1469,7 @@
                         <span style="font-size: 0.88rem; font-weight: 600; color: var(--text-secondary);">Xem
                             trước:</span>
                         <div class="ios-toggle-wrapper" style="transform: scale(0.85); transform-origin: right center;">
-                            <span class="ios-toggle-label" id="reg-cam-status-label" style="font-size: 0.8rem;">Camera
+                            <span class="ios-toggle-label" id="reg-cam-status-label" style="font-size: 0.8rem; color: var(--success); font-weight: 600;">Camera
                                 bật</span>
                             <label class="ios-switch">
                                 <input type="checkbox" id="reg-cam-toggle" checked
@@ -1486,10 +1486,10 @@
 
                         <!-- Status Badge Overlay -->
                         <div id="snap-badge"
-                            style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.65); color: var(--accent-cyan); padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
+                            style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.65); color: #ffffff; padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
                             <span id="snap-badge-dot"
                                 style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;"></span>
-                            <span id="snap-badge-text">Camera bật</span>
+                            <span id="snap-badge-text" style="color: #4ade80;">Camera trực tiếp</span>
                         </div>
 
                         <!-- FLOATING CIRCULAR SHUTTER BUTTON -->
@@ -1612,7 +1612,7 @@
                             <div class="ios-toggle-wrapper"
                                 style="transform: scale(0.8); transform-origin: right center;">
                                 <span class="ios-toggle-label" id="face-cam-status-label"
-                                    style="font-size: 0.75rem;">Camera bật</span>
+                                    style="font-size: 0.75rem; color: var(--success); font-weight: 600;">Camera bật</span>
                                 <label class="ios-switch">
                                     <input type="checkbox" id="face-cam-toggle" checked
                                         onchange="toggleFaceCameraModal(this.checked)">
@@ -1625,10 +1625,10 @@
                             <canvas id="face-snap-canvas" class="snap-canvas" width="640" height="480"
                                 style="display:block; width:100%; height:190px; object-fit:cover; border-radius:12px;"></canvas>
                             <div class="snap-badge"
-                                style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: var(--accent-cyan); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
+                                style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #ffffff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
                                 <span class="status-dot" id="face-snap-badge-dot"
                                     style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;"></span>
-                                <span id="face-snap-badge-text">Camera trực tiếp</span>
+                                <span id="face-snap-badge-text" style="color: #4ade80;">Camera trực tiếp</span>
                             </div>
 
                             <!-- FLOATING CIRCULAR SHUTTER BUTTON -->
@@ -1673,7 +1673,10 @@
                 btnToggle.classList.remove('is-captured');
                 btnToggle.title = 'Bấm để chụp ảnh snapshot';
             }
-            if (badgeText) badgeText.textContent = 'Camera trực tiếp';
+            if (badgeText) {
+                badgeText.textContent = 'Camera trực tiếp';
+                badgeText.style.color = '#4ade80';
+            }
             if (badgeDot) badgeDot.style.background = 'var(--success)';
 
             livePreviewInterval = setInterval(() => {
@@ -1707,9 +1710,20 @@
             if (regToggle) regToggle.checked = isCameraOn;
 
             if (isCameraOn) {
-                if (statusLabel) statusLabel.textContent = 'Camera bật';
-                if (badgeText) badgeText.textContent = 'Camera đang bật';
-                if (badgeDot) badgeDot.style.background = 'var(--success)';
+                if (statusLabel) {
+                    statusLabel.textContent = 'Camera bật';
+                    statusLabel.style.color = 'var(--success)';
+                }
+                if (badgeText) {
+                    if (capturedBase64) {
+                        badgeText.textContent = 'Ảnh đã chụp';
+                        badgeText.style.color = '#38bdf8';
+                    } else {
+                        badgeText.textContent = 'Camera trực tiếp';
+                        badgeText.style.color = '#4ade80';
+                    }
+                }
+                if (badgeDot) badgeDot.style.background = capturedBase64 ? '#38bdf8' : 'var(--success)';
                 if (btnSnap) btnSnap.disabled = false;
 
                 const regModal = document.getElementById('register-modal');
@@ -1718,8 +1732,14 @@
                     if (!capturedBase64) startModalLiveMirror();
                 }
             } else {
-                if (statusLabel) statusLabel.textContent = 'Camera tắt';
-                if (badgeText) badgeText.textContent = 'Camera đang tắt';
+                if (statusLabel) {
+                    statusLabel.textContent = 'Camera tắt';
+                    statusLabel.style.color = '#ef4444';
+                }
+                if (badgeText) {
+                    badgeText.textContent = 'Camera đang tắt';
+                    badgeText.style.color = '#f87171';
+                }
                 if (badgeDot) badgeDot.style.background = '#ef4444';
                 if (btnSnap) btnSnap.disabled = true;
 
@@ -1729,8 +1749,8 @@
                     const ctx = canvas.getContext('2d');
                     ctx.fillStyle = '#0f172a';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.font = '15px Inter, sans-serif';
+                    ctx.fillStyle = '#f87171';
+                    ctx.font = '600 15px Inter, sans-serif';
                     ctx.textAlign = 'center';
                     ctx.fillText('📷 Camera đang tắt', canvas.width / 2, canvas.height / 2);
                 }
@@ -1794,8 +1814,11 @@
                 btnToggle.classList.add('is-captured');
                 btnToggle.title = 'Bấm để chụp lại';
             }
-            if (badgeText) badgeText.textContent = 'Ảnh đã chụp';
-            if (badgeDot) badgeDot.style.background = 'var(--accent-cyan)';
+            if (badgeText) {
+                badgeText.textContent = 'Ảnh đã chụp';
+                badgeText.style.color = '#38bdf8';
+            }
+            if (badgeDot) badgeDot.style.background = '#38bdf8';
         }
 
         async function submitRegistration() {
@@ -2398,7 +2421,10 @@
                 btnToggle.classList.remove('is-captured');
                 btnToggle.title = 'Bấm để chụp ảnh snapshot';
             }
-            if (badgeText) badgeText.textContent = 'Camera trực tiếp';
+            if (badgeText) {
+                badgeText.textContent = 'Camera trực tiếp';
+                badgeText.style.color = '#4ade80';
+            }
             if (badgeDot) badgeDot.style.background = 'var(--success)';
 
             faceLiveMirrorInterval = setInterval(() => {
@@ -2426,8 +2452,11 @@
             if (faceLiveMirrorInterval) {
                 stopFaceLiveMirror();
                 faceCapturedBase64 = canvas.toDataURL('image/jpeg', 0.95);
-                if (badgeText) badgeText.textContent = 'Đã chụp snapshot!';
-                if (badgeDot) badgeDot.style.background = 'var(--accent-cyan)';
+                if (badgeText) {
+                    badgeText.textContent = 'Đã chụp snapshot!';
+                    badgeText.style.color = '#38bdf8';
+                }
+                if (badgeDot) badgeDot.style.background = '#38bdf8';
                 if (btnToggle) {
                     btnToggle.classList.add('is-captured');
                     btnToggle.title = 'Bấm để chụp lại';
@@ -2453,9 +2482,20 @@
             if (faceToggle) faceToggle.checked = isCameraOn;
 
             if (isCameraOn) {
-                if (statusLabel) statusLabel.textContent = 'Camera bật';
-                if (badgeText) badgeText.textContent = 'Camera trực tiếp';
-                if (badgeDot) badgeDot.style.background = 'var(--success)';
+                if (statusLabel) {
+                    statusLabel.textContent = 'Camera bật';
+                    statusLabel.style.color = 'var(--success)';
+                }
+                if (badgeText) {
+                    if (faceCapturedBase64) {
+                        badgeText.textContent = 'Đã chụp snapshot!';
+                        badgeText.style.color = '#38bdf8';
+                    } else {
+                        badgeText.textContent = 'Camera trực tiếp';
+                        badgeText.style.color = '#4ade80';
+                    }
+                }
+                if (badgeDot) badgeDot.style.background = faceCapturedBase64 ? '#38bdf8' : 'var(--success)';
                 if (btnFaceSnap) btnFaceSnap.disabled = false;
 
                 const facesModal = document.getElementById('faces-modal');
@@ -2464,8 +2504,14 @@
                     if (!faceCapturedBase64) startFaceLiveMirror();
                 }
             } else {
-                if (statusLabel) statusLabel.textContent = 'Camera tắt';
-                if (badgeText) badgeText.textContent = 'Camera đang tắt';
+                if (statusLabel) {
+                    statusLabel.textContent = 'Camera tắt';
+                    statusLabel.style.color = '#ef4444';
+                }
+                if (badgeText) {
+                    badgeText.textContent = 'Camera đang tắt';
+                    badgeText.style.color = '#f87171';
+                }
                 if (badgeDot) badgeDot.style.background = '#ef4444';
                 if (btnFaceSnap) btnFaceSnap.disabled = true;
 
@@ -2475,8 +2521,8 @@
                     const ctx = canvas.getContext('2d');
                     ctx.fillStyle = '#0f172a';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.font = '15px Inter, sans-serif';
+                    ctx.fillStyle = '#f87171';
+                    ctx.font = '600 15px Inter, sans-serif';
                     ctx.textAlign = 'center';
                     ctx.fillText('📷 Camera đang tắt', canvas.width / 2, canvas.height / 2);
                 }
