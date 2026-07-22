@@ -328,30 +328,31 @@
             white-space: nowrap;
         }
 
-        /* FLOATING GLASSMORPHIC SEARCH BAR */
+        /* BALANCED GLASSMORPHIC SEARCH BAR */
         .search-box {
-            padding: 0.6rem 1rem;
-            margin: 0.85rem 1.1rem 0.35rem 1.1rem;
+            position: relative;
+            margin: 0.65rem 1.1rem 0.4rem 1.1rem;
+            padding: 0.5rem 1rem;
             border-radius: var(--radius-pill);
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--panel-border);
-            box-shadow: 0 8px 24px var(--shadow-color);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            box-shadow: 0 4px 16px var(--shadow-color);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10;
+            flex-shrink: 0;
         }
 
         :root[data-theme="light"] .search-box {
-            background: rgba(255, 255, 255, 0.65);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.75);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
         }
 
         .search-box:focus-within {
-            transform: translateY(-2px);
+            transform: translateY(-1px);
             border-color: var(--primary-on-dark);
-            box-shadow: 0 12px 28px rgba(0, 102, 204, 0.25);
+            box-shadow: 0 8px 22px rgba(0, 102, 204, 0.25);
             background: rgba(255, 255, 255, 0.09);
         }
 
@@ -452,7 +453,9 @@
             overflow-y: auto;
             flex: 1;
             min-height: 0;
-            padding: 1rem 1.25rem 4.25rem 1.25rem;
+            padding: 0.5rem 1.25rem 4.5rem 1.25rem;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
         }
 
         .attendance-list::-webkit-scrollbar {
@@ -460,16 +463,17 @@
         }
 
         .attendance-list::-webkit-scrollbar-track {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
         }
 
         .attendance-list::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.3);
+            background: rgba(148, 163, 184, 0.35);
             border-radius: 10px;
         }
 
         .attendance-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(148, 163, 184, 0.5);
+            background: rgba(148, 163, 184, 0.65);
         }
 
         .attendance-item {
@@ -747,13 +751,13 @@
             box-shadow: 0 6px 16px rgba(0, 102, 204, 0.45);
         }
 
-        /* MODAL STYLES */
+        /* ULTRA TRANSLUCENT CRYSTAL GLASS MODAL STYLES */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.22);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             z-index: 2000;
             display: flex;
             align-items: center;
@@ -763,25 +767,35 @@
             transition: opacity 0.3s ease;
         }
 
+        :root[data-theme="light"] .modal-overlay {
+            background: rgba(15, 23, 42, 0.12);
+        }
+
         .modal-overlay.active {
             opacity: 1;
             pointer-events: auto;
         }
 
         .modal-card {
-            background: var(--panel-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--panel-border);
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
             border-radius: var(--radius-lg);
-            width: 90%;
-            max-width: 520px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            width: 92%;
+            max-width: 720px;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             transform: scale(0.92);
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        :root[data-theme="light"] .modal-card {
+            background: rgba(255, 255, 255, 0.52);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
         }
 
         .modal-overlay.active .modal-card {
@@ -790,11 +804,16 @@
 
         .modal-header {
             padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--panel-border);
-            background: var(--panel-card);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.03);
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        :root[data-theme="light"] .modal-header {
+            border-bottom-color: rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .modal-header h3 {
@@ -989,14 +1008,14 @@
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
-        /* FACE GALLERY GRID STYLES */
+        /* FACE GALLERY GRID STYLES (SUPER COMPACT PREVIEW) */
         .face-gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-            gap: 0.85rem;
-            max-height: 240px;
+            grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+            gap: 0.45rem;
+            max-height: 75px;
             overflow-y: auto;
-            padding: 0.25rem;
+            padding: 0.15rem;
         }
 
         .face-card {
@@ -1204,8 +1223,31 @@
             flex-direction: column;
             gap: 0.6rem;
             margin-top: 0.5rem;
-            max-height: 380px;
+            height: 320px;
+            min-height: 320px;
+            max-height: 320px;
             overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 0.25rem;
+        }
+
+        .student-manage-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .student-manage-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+
+        .student-manage-list::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.35);
+            border-radius: 10px;
+        }
+
+        .student-manage-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.65);
         }
 
         .student-manage-card {
@@ -1406,7 +1448,7 @@
             </div>
 
             <div class="video-footer">
-                <span id="video-footer-status">Trạng thái: Real-time Face Recognition Active</span>
+                <span id="video-footer-status">Trạng thái: Đang điểm danh</span>
             </div>
         </section>
 
@@ -1495,31 +1537,31 @@
 
     <!-- REGISTER STUDENT MODAL OVERLAY -->
     <div class="modal-overlay" id="register-modal">
-        <div class="modal-card" style="max-width: 480px;">
+        <div class="modal-card" style="max-width: 680px;">
             <div class="modal-header">
-                <h3>Đăng ký sinh viên mới</h3>
-                <button class="close-btn" onclick="closeRegisterModal()">&times;</button>
+                <h3 style="font-size: 1.25rem;">Đăng ký mới</h3>
             </div>
-            <div class="modal-body" style="padding: 1.15rem 1.4rem; gap: 0.75rem; overflow: visible; max-height: none;">
+            <div class="modal-body" style="padding: 1.35rem 1.6rem; gap: 0.9rem; overflow: visible; max-height: none;">
                 <div id="register-alert" class="alert-box" style="display:none;"></div>
 
-                <div class="form-group" style="gap: 0.3rem;">
-                    <label>Mã số sinh viên (MSSV)</label>
+                <div class="form-group" style="gap: 0.4rem;">
+                    <label style="font-size: 0.92rem; font-weight: 600;">Mã số sinh viên (MSSV)</label>
                     <input type="text" id="reg-student-code" placeholder="Ví dụ: SE..." required
-                        style="padding: 0.5rem 0.75rem;">
+                        style="padding: 0.65rem 0.95rem; font-size: 0.95rem; border-radius: 8px;">
                 </div>
 
-                <div class="form-group" style="gap: 0.3rem;">
-                    <label>Họ và Tên</label>
+                <div class="form-group" style="gap: 0.4rem;">
+                    <label style="font-size: 0.92rem; font-weight: 600;">Họ và Tên</label>
                     <input type="text" id="reg-name" placeholder="Ví dụ: Nguyễn Văn Mười..." required
-                        style="padding: 0.5rem 0.75rem;">
+                        style="padding: 0.65rem 0.95rem; font-size: 0.95rem; border-radius: 8px;">
                 </div>
 
-                <div class="form-group" style="gap: 0.3rem;">
-                    <label>Hình ảnh khuôn mặt</label>
+                <div class="form-group" style="gap: 0.4rem;">
+                    <label style="font-size: 0.92rem; font-weight: 600;">Hình ảnh khuôn mặt</label>
                     <div class="image-source-tabs">
-                        <button type="button" class="tab-btn active" id="tab-snap" onclick="switchImageTab('snap')">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        <button type="button" class="tab-btn active" id="tab-snap" onclick="switchImageTab('snap')"
+                            style="padding: 0.65rem 1rem; font-size: 0.9rem;">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path
                                     d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
@@ -1528,8 +1570,9 @@
                             </svg>
                             <span>Chụp từ camera</span>
                         </button>
-                        <button type="button" class="tab-btn" id="tab-upload" onclick="switchImageTab('upload')">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        <button type="button" class="tab-btn" id="tab-upload" onclick="switchImageTab('upload')"
+                            style="padding: 0.65rem 1rem; font-size: 0.9rem;">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
                                 </path>
@@ -1542,11 +1585,11 @@
                 <!-- SNAP SECTION -->
                 <div id="section-snap" class="source-section">
                     <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
-                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Xem
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.88rem; font-weight: 600; color: var(--text-secondary);">Xem
                             trước:</span>
-                        <div class="ios-toggle-wrapper" style="transform: scale(0.8); transform-origin: right center;">
-                            <span class="ios-toggle-label" id="reg-cam-status-label" style="font-size: 0.75rem;">Camera
+                        <div class="ios-toggle-wrapper" style="transform: scale(0.85); transform-origin: right center;">
+                            <span class="ios-toggle-label" id="reg-cam-status-label" style="font-size: 0.8rem;">Camera
                                 bật</span>
                             <label class="ios-switch">
                                 <input type="checkbox" id="reg-cam-toggle" checked
@@ -1556,14 +1599,14 @@
                         </div>
                     </div>
                     <div class="snap-preview-box"
-                        style="position: relative; background: var(--video-bg); border-radius: 12px; overflow: hidden; height: 210px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">
+                        style="position: relative; background: var(--video-bg); border-radius: 12px; overflow: hidden; height: 280px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">
                         <!-- Canvas Mirror for Live Stream & Snapshot -->
                         <canvas id="snap-canvas" width="640" height="480"
-                            style="display:block; width:100%; height:210px; object-fit:cover; border-radius:12px;"></canvas>
+                            style="display:block; width:100%; height:280px; object-fit:cover; border-radius:12px;"></canvas>
 
                         <!-- Status Badge Overlay -->
                         <div id="snap-badge"
-                            style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: var(--accent-cyan); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
+                            style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.65); color: var(--accent-cyan); padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
                             <span id="snap-badge-dot"
                                 style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;"></span>
                             <span id="snap-badge-text">Camera bật</span>
@@ -1591,10 +1634,9 @@
 
     <!-- MANAGE STUDENTS MODAL OVERLAY -->
     <div class="modal-overlay" id="manage-modal">
-        <div class="modal-card" style="max-width: 620px;">
+        <div class="modal-card" style="max-width: 900px;">
             <div class="modal-header">
                 <h3>Quản lý sinh viên</h3>
-                <button class="close-btn" onclick="closeManageModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div id="manage-alert" class="alert-box" style="display:none;"></div>
@@ -1629,23 +1671,23 @@
 
     <!-- MANAGE FACES MODAL OVERLAY -->
     <div class="modal-overlay" id="faces-modal">
-        <div class="modal-card" style="max-width: 650px;">
+        <div class="modal-card" style="max-width: 580px;">
             <div class="modal-header">
                 <div>
-                    <h3 id="faces-modal-title" style="margin:0;">Quản lý khuôn mặt</h3>
-                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;"
+                    <h3 id="faces-modal-title" style="margin:0; font-size: 1.15rem;">Quản lý ảnh</h3>
+                    <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.15rem;"
                         id="faces-modal-subtitle">Sinh viên</div>
                 </div>
-                <button class="close-btn" onclick="closeFacesModal()">&times;</button>
             </div>
-            <div class="modal-body" style="gap:1.1rem; max-height: 75vh; overflow-y: auto;">
+            <div class="modal-body" style="padding: 1.15rem 1.4rem; gap: 0.65rem; overflow: visible; max-height: none;">
                 <div id="faces-alert" class="alert-box" style="display:none;"></div>
 
                 <!-- GALLERY SECTION -->
                 <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-                        <span style="font-weight:600; font-size:0.9rem;">Tập ảnh khuôn mặt trong CSDL</span>
-                        <span class="count-chip" id="faces-count-chip">0 ảnh</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                        <span style="font-weight:600; font-size:0.84rem;">Tất cả ảnh khuôn mặt trong CSDL</span>
+                        <span class="count-chip" id="faces-count-chip"
+                            style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">0 ảnh</span>
                     </div>
                     <div class="face-gallery-grid" id="faces-gallery-container">
                         <!-- Face items loaded dynamically -->
@@ -1653,12 +1695,13 @@
                 </div>
 
                 <!-- ADD NEW FACE SECTION -->
-                <div style="border-top:1px solid var(--panel-border); padding-top:1rem;">
-                    <span style="font-weight:600; font-size:0.9rem; display:block; margin-bottom:0.75rem;">Thêm mẫu
+                <div style="border-top:1px solid var(--panel-border); padding-top:0.6rem;">
+                    <span style="font-weight:600; font-size:0.84rem; display:block; margin-bottom:0.45rem;">Thêm mẫu
                         khuôn mặt mới</span>
 
                     <div class="source-tabs">
-                        <button class="tab-btn active" id="tab-face-snap" onclick="switchFaceTab('snap')">
+                        <button class="tab-btn active" id="tab-face-snap" onclick="switchFaceTab('snap')"
+                            style="padding: 0.5rem 0.8rem; font-size: 0.85rem;">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path
@@ -1668,7 +1711,8 @@
                             </svg>
                             <span>Chụp Camera</span>
                         </button>
-                        <button class="tab-btn" id="tab-face-upload" onclick="switchFaceTab('upload')">
+                        <button class="tab-btn" id="tab-face-upload" onclick="switchFaceTab('upload')"
+                            style="padding: 0.5rem 0.8rem; font-size: 0.85rem;">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -1680,11 +1724,11 @@
                     </div>
 
                     <!-- SNAP SECTION -->
-                    <div id="section-face-snap" class="source-section active" style="margin-top: 0.6rem;">
+                    <div id="section-face-snap" class="source-section active" style="margin-top: 0.45rem;">
                         <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
-                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Trạng thái
-                                Camera Preview</span>
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                            <span style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);">Xem trước:
+                            </span>
                             <div class="ios-toggle-wrapper"
                                 style="transform: scale(0.8); transform-origin: right center;">
                                 <span class="ios-toggle-label" id="face-cam-status-label"
@@ -1697,9 +1741,9 @@
                             </div>
                         </div>
                         <div class="snap-box"
-                            style="position: relative; background: var(--video-bg); border-radius: 12px; overflow: hidden; height: 210px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">
+                            style="position: relative; background: var(--video-bg); border-radius: 12px; overflow: hidden; height: 190px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">
                             <canvas id="face-snap-canvas" class="snap-canvas" width="640" height="480"
-                                style="display:block; width:100%; height:210px; object-fit:cover; border-radius:12px;"></canvas>
+                                style="display:block; width:100%; height:190px; object-fit:cover; border-radius:12px;"></canvas>
                             <div class="snap-badge"
                                 style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: var(--accent-cyan); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px;">
                                 <span class="status-dot" id="face-snap-badge-dot"
@@ -1714,7 +1758,7 @@
                     </div>
 
                     <!-- UPLOAD SECTION -->
-                    <div id="section-face-upload" class="source-section" style="display:none;">
+                    <div id="section-face-upload" class="source-section" style="display:none; margin-top: 0.45rem;">
                         <input type="file" id="face-upload-file" accept="image/*"
                             style="width:100%; padding:0.55rem; background:var(--panel-card); border:1px solid var(--panel-border); border-radius:8px; color:var(--text-primary);">
                     </div>
@@ -2304,7 +2348,7 @@
                                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                                 <circle cx="12" cy="13" r="4"></circle>
                             </svg>
-                            <span>Cập nhật ảnh</span>
+                            <span>Quản lý ảnh</span>
                         </button>
                         <button class="btn-action-edit" onclick="enableEditStudent('${s.student_code}', '${s.name.replace(/'/g, "\\'")}')">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2433,7 +2477,7 @@
             if (isCameraOn) {
                 if (feedImg) { feedImg.src = "/video_feed"; feedImg.style.display = 'block'; }
                 if (placeholder) placeholder.style.display = 'none';
-                if (statusSpan) statusSpan.textContent = 'Trạng thái: Real-time Face Recognition Active';
+                if (statusSpan) statusSpan.textContent = 'Trạng thái: Đang điểm danh';
             } else {
                 if (feedImg) { feedImg.src = ""; feedImg.style.display = 'none'; }
                 if (placeholder) placeholder.style.display = 'block';
@@ -2583,7 +2627,7 @@
         async function openFacesModal(code, name) {
             currentFaceStudentCode = code;
             currentFaceStudentName = name;
-            document.getElementById('faces-modal-title').textContent = `Quản lý khuôn mặt - ${name}`;
+            document.getElementById('faces-modal-title').textContent = `Quản lý ảnh - ${name}`;
             document.getElementById('faces-modal-subtitle').textContent = `MSSV: ${code}`;
             document.getElementById('faces-alert').style.display = 'none';
             document.getElementById('faces-modal').classList.add('active');
@@ -2730,6 +2774,16 @@
                 submitBtn.innerHTML = 'Thêm khuôn mặt & đồng bộ';
             }
         }
+
+        // CLICK OUTSIDE MODAL OVERLAY TO CLOSE
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+                const overlayId = e.target.id;
+                if (overlayId === 'register-modal') closeRegisterModal();
+                else if (overlayId === 'manage-modal') closeManageModal();
+                else if (overlayId === 'faces-modal') closeFacesModal();
+            }
+        });
 
         connectWebSocket();
     </script>
