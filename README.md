@@ -1,4 +1,4 @@
-# Hệ Thống Nhận Diện Khuôn Mặt & Điểm Danh Sinh Viên
+# "Face Regconition Attendence System with Yolov8 and ArcFace" - Hệ Thống Nhận Diện Khuôn Mặt & Điểm Danh Sinh Viên
 
 Hệ thống điểm danh tự động thời gian thực sử dụng **YOLOv8-face** (phát hiện khuôn mặt), **InsightFace ArcFace** (trích xuất vector đặc trưng 512D), **SQLite** (lưu trữ) và **FastAPI + WebSockets** (giao diện web).
 
