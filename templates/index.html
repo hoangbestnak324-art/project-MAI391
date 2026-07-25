@@ -1396,7 +1396,7 @@
                         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                         <path d="M3 3v5h5"></path>
                     </svg>
-                    <span>Reset</span>
+                    <span>Làm mới</span>
                 </button>
                 <button class="btn-export-csv-floating" onclick="exportAttendanceCSV()"
                     title="Xuất danh sách điểm danh hôm nay ra file CSV">
@@ -1469,7 +1469,8 @@
                         <span style="font-size: 0.88rem; font-weight: 600; color: var(--text-secondary);">Xem
                             trước:</span>
                         <div class="ios-toggle-wrapper" style="transform: scale(0.85); transform-origin: right center;">
-                            <span class="ios-toggle-label" id="reg-cam-status-label" style="font-size: 0.8rem; color: var(--success); font-weight: 600;">Camera
+                            <span class="ios-toggle-label" id="reg-cam-status-label"
+                                style="font-size: 0.8rem; color: var(--success); font-weight: 600;">Camera
                                 bật</span>
                             <label class="ios-switch">
                                 <input type="checkbox" id="reg-cam-toggle" checked
@@ -1612,7 +1613,8 @@
                             <div class="ios-toggle-wrapper"
                                 style="transform: scale(0.8); transform-origin: right center;">
                                 <span class="ios-toggle-label" id="face-cam-status-label"
-                                    style="font-size: 0.75rem; color: var(--success); font-weight: 600;">Camera bật</span>
+                                    style="font-size: 0.75rem; color: var(--success); font-weight: 600;">Camera
+                                    bật</span>
                                 <label class="ios-switch">
                                     <input type="checkbox" id="face-cam-toggle" checked
                                         onchange="toggleFaceCameraModal(this.checked)">
@@ -2092,7 +2094,7 @@
         }
 
         async function resetAttendanceAction() {
-            if (!confirm("Bạn có muốn reset toàn bộ danh sách điểm danh của phiên này?")) return;
+            if (!confirm("Bạn có muốn làm mới (reset) toàn bộ danh sách điểm danh của phiên này?")) return;
 
             try {
                 const res = await fetch('/api/attendance/reset', { method: 'POST' });
